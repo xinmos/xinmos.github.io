@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Docker // 牧阳的星</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.111.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="牧阳的星" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Docker"/>
+<meta name="twitter:description" content="一、引言 1.1 环境不一致 我本地运行没问题啊：由于环境不一致，导致相同的程序，运行结果却不一致。 1.2 隔离性 哪个哥们又写死循环了，怎么这么卡：在多用户"/>
+
+    <meta property="og:title" content="Docker" />
+<meta property="og:description" content="一、引言 1.1 环境不一致 我本地运行没问题啊：由于环境不一致，导致相同的程序，运行结果却不一致。 1.2 隔离性 哪个哥们又写死循环了，怎么这么卡：在多用户" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://xinmos.github.io/docker/docker/" /><meta property="article:section" content="docker" />
+<meta property="article:published_time" content="2023-05-19T21:54:41+08:00" />
+<meta property="article:modified_time" content="2023-05-19T21:54:41+08:00" />
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="http://xinmos.github.io"><img class="app-header-avatar" src="/images/head.png" alt="牧阳的星" /></a>
+      <span class="app-header-title">牧阳的星</span>
+      <nav class="app-header-menu">
+          <a class="app-header-menu-item" href="/docker/">docker</a>
+             
+          
+          <a class="app-header-menu-item" href="/git/">git</a>
+             
+          
+          <a class="app-header-menu-item" href="/java/">java</a>
+             
+          
+          <a class="app-header-menu-item" href="/python/">python</a>
+      </nav>
+      <p>人生就像一杯茶，不会苦一辈子，但总会苦一阵子。</p>
+      <div class="app-header-social">
+        
+          <a href="https://github.com/xinmos" target="_blank" rel="noreferrer noopener me">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>My Github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg>
+          </a>
+        
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Docker</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 19, 2023
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          13 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <p><img src="/Pictures/1586333742105.png" alt="1586333742105"></p>
+<h3 id="一引言">一、引言</h3>
+<hr>
+<h4 id="11-环境不一致">1.1 环境不一致</h4>
+<blockquote>
+<p>我本地运行没问题啊：由于环境不一致，导致相同的程序，运行结果却不一致。</p>
+</blockquote>
+<h4 id="12-隔离性">1.2 隔离性</h4>
+<blockquote>
+<p>哪个哥们又写死循环了，怎么这么卡：在多用户的操作系统下，会因为其他用户的操作失误影响到你自己编些的程序。</p>
+</blockquote>
+<h4 id="13-弹性伸缩">1.3 弹性伸缩</h4>
+<blockquote>
+<p>淘宝在双11的时候，用户量暴增：需要很多很多的运维人员去增加部署的服务器，运维成本过高的问题。</p>
+</blockquote>
+<h4 id="14-学习成本">1.4 学习成本</h4>
+<blockquote>
+<p>学习一门技术，得先安装啊：学习每一门技术都要先安装响应的软件，但是还有他所依赖的各种环境，安装软件成本快高过学习成本啦。</p>
+</blockquote>
+<h3 id="二docker介绍">二、Docker介绍</h3>
+<hr>
+<h4 id="21-docker的由来">2.1 Docker的由来</h4>
+<blockquote>
+<p>一帮年轻人创业，创办了一家公司，2010年的专门做PAAS平台。但是到了2013年的时候，像亚马逊，微软，Google都开始做PAAS平台。到了2013年，公司资金链断裂，不得不倒闭，于是将公司内的核心技术对外开源，核心技术就是Docker。由于开源了Docker，到了2014年的时候，得到了C轮的融资 $4000W，2015年的时候，得到了D轮的融资.$9500W。于是公司开始全神贯注的维护Docker。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Docker主要作者-所罗门</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1586340594252.png" alt="1586340594252"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Docker的作者已经离开了维护Docker的团队</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1586340639934.png" alt="1586340639934"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="22-docker的思想">2.2 Docker的思想</h4>
+<blockquote>
+<ul>
+<li>
+<p>集装箱：会将所有需要的内容放到不同的集装箱中，谁需要这些环境就直接拿到这个集装箱就可以了。</p>
+</li>
+<li>
+<p>标准化：</p>
+<ul>
+<li>运输的标准化：Docker有一个码头，所有上传的集装箱都放在了这个码头上，当谁需要某一个环境，就直接指派大海疼去搬运这个集装箱就可以了。</li>
+<li>命令的标准化：Docker提供了一些列的命令，帮助我们去获取集装箱等等操作。</li>
+<li>提供了REST的API：衍生出了很多的图形化界面，Rancher。</li>
+</ul>
+</li>
+<li>
+<p>隔离性：Docker在运行集装箱内的内容时，会在Linux的内核中，单独的开辟一片空间，这片空间不会影响到其他程序。</p>
+</li>
+<li>
+<p>中央仓库|注册中心：超级码头，上面放的就是集装箱</p>
+</li>
+<li>
+<p>镜像：就是集装箱</p>
+</li>
+<li>
+<p>容器：运行起来的镜像</p>
+</li>
+</ul>
+</blockquote>
+<h3 id="三docker的安装">三、Docker的安装</h3>
+<hr>
+<h4 id="31-下载docker依赖的环境">3.1 下载Docker依赖的环境</h4>
+<blockquote>
+<p>想安装Docker，需要先将依赖的环境全部下载，就像Maven依赖JDK一样</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>yum -y install yum-utils device-mapper-persistent-data lvm2
+</span></span></code></pre></div><h4 id="32-指定docker镜像源">3.2 指定Docker镜像源</h4>
+<blockquote>
+<p>默认下载Docker回去国外服务器下载，速度较慢，我们可以设置为阿里云镜像源，速度更快</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+</span></span></code></pre></div><h4 id="33-安装docker">3.3 安装Docker</h4>
+<blockquote>
+<p>依然采用yum的方式安装</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>yum makacache fast
+</span></span><span style="display:flex;"><span>yum -y install docker-ce
+</span></span></code></pre></div><h4 id="34-启动docker并测试">3.4 启动Docker并测试</h4>
+<blockquote>
+<p>安装成功后，需要手动启动，设置为开机自启，并测试一下Docker</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 启动Docker服务</span>
+</span></span><span style="display:flex;"><span>systemctl start docker
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 设置开机自动启动</span>
+</span></span><span style="display:flex;"><span>systemctl enable docker
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 测试</span>
+</span></span><span style="display:flex;"><span>docker run hello-world
+</span></span></code></pre></div><h3 id="四docker的中央仓库重点">四、Docker的中央仓库【<code>重点</code>】</h3>
+<hr>
+<blockquote>
+<ul>
+<li>
+<p>Docker官方的中央仓库：这个仓库是镜像最全的，但是下载速度较慢。</p>
+<p><a href="https://hub.docker.com/">https://hub.docker.com/</a></p>
+</li>
+<li>
+<p>国内的镜像网站：网易蜂巢，daoCloud等，下载速度快，但是镜像相对不全。</p>
+<p><a href="https://c.163yun.com/hub#/home">https://c.163yun.com/hub#/home</a></p>
+<p><a href="http://hub.daocloud.io/">http://hub.daocloud.io/</a>     （推荐使用）</p>
+</li>
+<li>
+<p>在公司内部会采用私服的方式拉取镜像，需要添加配置，如下……</p>
+</li>
+</ul>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#960050;background-color:#1e0010">需要创建/etc/docker/daemon.json，并添加如下内容</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;debug&#34;</span> : <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;experimental&#34;</span> : <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;registry-mirrors&#34;</span>: [
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;https://registry.docker-cn.com&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;http://hub-mirror.c.163.com&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;https://docker.mirrors.ustc.edu.cn&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;https://cr.console.aliyun.com/&#34;</span>
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">#</span> <span style="color:#960050;background-color:#1e0010">重启两个服务</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">systemctl</span> <span style="color:#960050;background-color:#1e0010">daemon-reload</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">systemctl</span> <span style="color:#960050;background-color:#1e0010">restart</span> <span style="color:#960050;background-color:#1e0010">docker</span>
+</span></span></code></pre></div><h3 id="五镜像的操作重点">五、镜像的操作【<code>重点</code>】</h3>
+<hr>
+<h4 id="51-拉取镜像">5.1 拉取镜像</h4>
+<blockquote>
+<p>从中央仓库拉取镜像到本地</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker pull 镜像名称<span style="color:#f92672">[</span>:tag<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 举个栗子：docker pull daocloud.io/library/tomcat:8.5.15-jre8</span>
+</span></span></code></pre></div><h4 id="52-查看本地全部镜像">5.2 查看本地全部镜像</h4>
+<blockquote>
+<p>查看本地已经安装过的镜像信息，包含标识，名称，版本，更新时间，大小</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker images
+</span></span></code></pre></div><h4 id="53-删除本地镜像">5.3 删除本地镜像</h4>
+<blockquote>
+<p>镜像会占用磁盘空间，可以直接手动删除，标识通过查看获取</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker rmi 镜像的标识
+</span></span></code></pre></div><h4 id="54-镜像的导入导出">5.4 镜像的导入导出</h4>
+<blockquote>
+<p>如果因为网络原因可以通过硬盘的方式传输镜像，虽然不规范，但是有效，但是这种方式导出的镜像名称和版本都是null，需要手动修改</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 将本地的镜像导出</span>
+</span></span><span style="display:flex;"><span>docker save -o 导出的路径 镜像id
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 加载本地的镜像文件</span>
+</span></span><span style="display:flex;"><span>docker load -i 镜像文件
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 修改镜像名称</span>
+</span></span><span style="display:flex;"><span>docker tag 镜像id 新镜像名称:版本
+</span></span></code></pre></div><h3 id="六容器操作重点">六、容器操作【<code>重点</code>】</h3>
+<hr>
+<h4 id="61-运行容器">6.1 运行容器</h4>
+<blockquote>
+<p>运行容器需要制定具体镜像，如果镜像不存在，会直接下载</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 简单操作</span>
+</span></span><span style="display:flex;"><span>docker run 镜像的标识|镜像名称<span style="color:#f92672">[</span>:tag<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 常用的参数</span>
+</span></span><span style="display:flex;"><span>docker run -d -p 宿主机端口:容器端口 --name 容器名称 镜像的标识|镜像名称<span style="color:#f92672">[</span>:tag<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># -d：代表后台运行容器</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># -p 宿主机端口:容器端口：为了映射当前Linux的端口和容器的端口</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># --name 容器名称：指定容器的名称</span>
+</span></span></code></pre></div><h4 id="62-查看正在运行的容器">6.2 查看正在运行的容器</h4>
+<blockquote>
+<p>查看全部正在运行的容器信息</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker ps <span style="color:#f92672">[</span>-qa<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># -a：查看全部的容器，包括没有运行</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># -q：只查看容器的标识</span>
+</span></span></code></pre></div><h4 id="63-查看容器日志">6.3 查看容器日志</h4>
+<blockquote>
+<p>查看容器日志，以查看容器运行的信息</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker logs -f 容器id
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># -f：可以滚动查看日志的最后几行</span>
+</span></span></code></pre></div><h4 id="64-进入容器内容部">6.4 进入容器内容部</h4>
+<blockquote>
+<p>可以进入容器内部进行操作</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker exec -it 容器id bash
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 纯 python 项目镜像</span>
+</span></span><span style="display:flex;"><span>docker exec -it 容器id /bin/sh
+</span></span></code></pre></div><h4 id="65-复制内容到容器">6.5 复制内容到容器</h4>
+<blockquote>
+<p>将宿主机的文件复制到容器内部的指定目录</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker cp 文件名称 容器id:容器内部路径
+</span></span></code></pre></div><h4 id="66-重启启动停止删除容器">6.6 重启&amp;启动&amp;停止&amp;删除容器</h4>
+<blockquote>
+<p>容器的启动，停止，删除等操作，后续经常会使用到</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 重新启动容器</span>
+</span></span><span style="display:flex;"><span>docker restart 容器id
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 启动停止运行的容器</span>
+</span></span><span style="display:flex;"><span>docker start 容器id
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 停止指定的容器（删除容器前，需要先停止容器）</span>
+</span></span><span style="display:flex;"><span>docker stop 容器id
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 停止全部容器</span>
+</span></span><span style="display:flex;"><span>docker stop <span style="color:#66d9ef">$(</span>docker ps -qa<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 删除指定容器</span>
+</span></span><span style="display:flex;"><span>docker rm 容器id
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 删除全部容器</span>
+</span></span><span style="display:flex;"><span>docker rm <span style="color:#66d9ef">$(</span>docker ps -qa<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 同时删除多个符合筛选条件的容器,例如删除状态为“exited”的容器</span>
+</span></span><span style="display:flex;"><span>docker rm <span style="color:#66d9ef">$(</span>docker container ls -f <span style="color:#e6db74">&#34;status=exited&#34;</span> -q<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><h4 id="67-容器自动重启">6.7 容器自动重启</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker update --restart<span style="color:#f92672">=</span>always xxx
+</span></span></code></pre></div><h3 id="七docker应用">七、Docker应用</h3>
+<hr>
+<h4 id="71-docker安装tomcat">7.1 Docker安装Tomcat</h4>
+<blockquote>
+<p>运行Tomcat容器，为部署SSM工程做准备</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker run -d -p 8080:8080 --name tomcat daocloud.io/library/tomcat:8.5.15-jre8
+</span></span></code></pre></div><h4 id="72-docker安装mysql">7.2 Docker安装MySQL</h4>
+<blockquote>
+<p>运行MySQL容器，为部署SSM工程做准备</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD<span style="color:#f92672">=</span>root daocloud.io/library/mysql:5.7.4
+</span></span></code></pre></div><h4 id="73-部署ssm工程">7.3 部署SSM工程</h4>
+<blockquote>
+<ul>
+<li>修改SSM工程环境，设置为Linux中Docker容器的信息</li>
+<li>通过Maven的package重新打成war包</li>
+<li>讲Windows下的war包复制到Linux中</li>
+<li>通过docker命令将宿主机的war包复制到容器内部</li>
+<li>测试访问SSM工程</li>
+</ul>
+</blockquote>
+<h3 id="八数据卷重点">八、数据卷【<code>重点</code>】</h3>
+<hr>
+<blockquote>
+<p>为了部署SSM的工程，需要使用到cp的命令将宿主机内的ssm.war文件复制到容器内部。</p>
+<p>数据卷：将宿主机的一个目录映射到容器的一个目录中。</p>
+<p>可以在宿主机中操作目录中的内容，那么容器内部映射的文件，也会跟着一起改变。</p>
+</blockquote>
+<h4 id="81-创建数据卷">8.1 创建数据卷</h4>
+<blockquote>
+<p>创建数据卷之后，默认会存放在一个目录下 /var/lib/docker/volumes/数据卷名称/_data</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker volume create 数据卷名称
+</span></span></code></pre></div><h4 id="82-查看数据卷详情">8.2 查看数据卷详情</h4>
+<blockquote>
+<p>查看数据卷的详细信息，可以查询到存放路径，创建时间等等</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker volume inspect 数据卷名称
+</span></span></code></pre></div><h4 id="83-查看全部数据卷">8.3 查看全部数据卷</h4>
+<blockquote>
+<p>查看全部数据卷信息</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker volume ls
+</span></span></code></pre></div><h4 id="84-删除数据卷">8.4 删除数据卷</h4>
+<blockquote>
+<p>删除指定数据卷</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker volume rm 数据卷名称
+</span></span></code></pre></div><h4 id="85-容器映射数据卷">8.5 容器映射数据卷</h4>
+<blockquote>
+<p>映射有两种方式：</p>
+<ul>
+<li>通过数据卷名称映射，如果数据卷不存在。Docker会帮你自动创建，会将容器内部自带的文件，存储在默认的存放路径中。</li>
+<li>通过路径映射数据卷，直接指定一个路径作为数据卷的存放位置。但是这个路径下是空的。</li>
+</ul>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 通过数据卷名称映射</span>
+</span></span><span style="display:flex;"><span>docker run -v 数据卷名称:容器内部的路径 镜像id
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 通过路径映射数据卷</span>
+</span></span><span style="display:flex;"><span>docker run -v 路径:容器内部的路径 镜像id
+</span></span></code></pre></div><h3 id="九dockerfile自定义镜像重点">九、Dockerfile自定义镜像【<code>重点</code>】</h3>
+<hr>
+<blockquote>
+<p>我们可以从中央仓库下载一个镜像，也可以自己手动去制作一个镜像，需要通过Dockerfile去指定自定义镜像的信息</p>
+</blockquote>
+<h4 id="91-dockerfile">9.1 Dockerfile</h4>
+<blockquote>
+<p>创建自定义镜像就需要创建一个Dockerfile，如下为Dockerfile的语言</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>from: 指定当前自定义镜像依赖的环境
+</span></span><span style="display:flex;"><span>copy: 将相对路径下的内容复制到自定义镜像中
+</span></span><span style="display:flex;"><span>workdir: 声明镜像的默认工作目录
+</span></span><span style="display:flex;"><span>run: 执行的命令，可以编写多个
+</span></span><span style="display:flex;"><span>cmd: 需要执行的命令（在workdir下执行的，cmd可以写多个，只以最后一个为准）
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 举个例子，制作SSM容器镜像，而且ssm.war要放在Dockerfile的同级目录下</span>
+</span></span><span style="display:flex;"><span>from daocloud.io/library/tomcat:8.5.15-jre8
+</span></span><span style="display:flex;"><span>copy ssm.war /usr/local/tomcat/webapps
+</span></span></code></pre></div><h4 id="92-通过dockerfile制作镜像">9.2 通过Dockerfile制作镜像</h4>
+<blockquote>
+<p>编写完Dockerfile后需要通过命令将其制作为镜像，并且要在Dockerfile的当前目录下，之后即可在镜像中查看到指定的镜像信息，注意最后的 <a href="">.</a></p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker build -t 镜像名称<span style="color:#f92672">[</span>:tag<span style="color:#f92672">]</span> .
+</span></span></code></pre></div><h3 id="十-docker-compose重点">十. Docker-Compose【<code>重点</code>】</h3>
+<hr>
+<blockquote>
+<p>之前运行一个镜像，需要添加大量的参数,可以通过Docker-Compose编写这些参数。而且Docker-Compose可以帮助我们批量的管理容器。这些信息只需要通过一个docker-compose.yml文件去维护即可。</p>
+</blockquote>
+<h4 id="101-下载并安装docker-compose">10.1 下载并安装Docker-Compose</h4>
+<h5 id="1011-下载docker-compose">10.1.1 下载Docker-Compose</h5>
+<blockquote>
+<p>去github官网搜索docker-compose，下载1.24.1版本的Docker-Compose</p>
+<p>下载路径：<a href="">https://github.com/docker/compose/releases/download/1.24.1/docker-compose-Linux-x86_64</a></p>
+</blockquote>
+<h5 id="1012-设置权限">10.1.2 设置权限</h5>
+<blockquote>
+<p>需要将DockerCompose文件的名称修改一下，给予DockerCompose文件一个可执行的权限</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>mv docker-compose-Linux-x86_64 docker-compose
+</span></span><span style="display:flex;"><span>chmod <span style="color:#ae81ff">777</span> docker-compose
+</span></span></code></pre></div><h5 id="1013-配置环境变量">10.1.3 配置环境变量</h5>
+<blockquote>
+<p>方便后期操作，配置一个环境变量</p>
+<p>将docker-compose文件移动到了/usr/local/bin , 修改了/etc/profile文件，给/usr/local/bin配置到了PATH中</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>mv docker-compose /usr/local/bin
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>vi /etc/profile
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 添加内容： export PATH=$JAVA_HOME:/usr/local/bin:$PATH</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>source /etc/profile
+</span></span></code></pre></div><h5 id="1014-测试">10.1.4 测试</h5>
+<blockquote>
+<p>在任意目录下输入docker-compose</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">测试效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1586420176720.png" alt="1586420176720"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="102-docker-compose管理mysql和tomcat容器">10.2 Docker-Compose管理MySQL和Tomcat容器</h4>
+<blockquote>
+<p>yml文件以key: value方式来指定配置信息</p>
+<p>多个配置信息以换行+缩进的方式来区分</p>
+<p>在docker-compose.yml文件中，不要使用制表符</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#39;3.1&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">services</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">mysql</span>:           <span style="color:#75715e"># 服务的名称</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always  </span> <span style="color:#75715e"># 代表只要docker启动，那么这个容器就跟着一起启动</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">image</span>: <span style="color:#ae81ff">daocloud.io/library/mysql:5.7.4 </span> <span style="color:#75715e"># 指定镜像路径</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">container_name</span>: <span style="color:#ae81ff">mysql </span> <span style="color:#75715e"># 指定容器名称</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">3306</span>:<span style="color:#ae81ff">3306</span>   <span style="color:#75715e">#  指定端口号的映射</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">environment</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">MYSQL_ROOT_PASSWORD</span>: <span style="color:#ae81ff">root  </span> <span style="color:#75715e"># 指定MySQL的ROOT用户登录密码</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">TZ</span>: <span style="color:#ae81ff">Asia/Shanghai       </span> <span style="color:#75715e"># 指定时区</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">volumes</span>:
+</span></span><span style="display:flex;"><span>     - <span style="color:#ae81ff">/opt/docker_mysql_tomcat/mysql_data:/var/lib/mysql  </span> <span style="color:#75715e"># 映射数据卷</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">tomcat</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">image</span>: <span style="color:#ae81ff">daocloud.io/library/tomcat:8.5.15-jre8</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">container_name</span>: <span style="color:#ae81ff">tomcat</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">8080</span>:<span style="color:#ae81ff">8080</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">environment</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">TZ</span>: <span style="color:#ae81ff">Asia/Shanghai</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">volumes</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">/opt/docker_mysql_tomcat/tomcat_webapps:/usr/local/tomcat/webapps</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">/opt/docker_mysql_tomcat/tomcat_logs:/usr/local/tomcat/logs</span>
+</span></span></code></pre></div><h4 id="103-使用docker-compose命令管理容器">10.3 使用docker-compose命令管理容器</h4>
+<blockquote>
+<p>在使用docker-compose的命令时 ，默认会在当前目录下找docker-compose.yml文件</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 1. 基于docker-compose.yml启动管理的容器</span>
+</span></span><span style="display:flex;"><span>docker-compose up -d
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 2. 关闭并删除容器</span>
+</span></span><span style="display:flex;"><span>docker-compose down
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 3. 开启|关闭|重启已经存在的由docker-compose维护的容器</span>
+</span></span><span style="display:flex;"><span>docker-compose start|stop|restart
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 4. 查看由docker-compose管理的容器</span>
+</span></span><span style="display:flex;"><span>docker-compose ps
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 5. 查看日志</span>
+</span></span><span style="display:flex;"><span>docker-compose logs -f
+</span></span></code></pre></div><h4 id="104-docker-compose配合dockerfile使用">10.4 docker-compose配合Dockerfile使用</h4>
+<blockquote>
+<p>使用docker-compose.yml文件以及Dockerfile文件在生成自定义镜像的同时启动当前镜像，并且由docker-compose去管理容器</p>
+</blockquote>
+<h5 id="1041-docker-compose文件">10.4.1 docker-compose文件</h5>
+<blockquote>
+<p>编写docker-compose.yml文件</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#75715e"># yml文件</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#39;3.1&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">services</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ssm</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">build</span>:            <span style="color:#75715e"># 构建自定义镜像</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">context</span>: <span style="color:#ae81ff">../     </span> <span style="color:#75715e"># 指定dockerfile文件的所在路径</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">dockerfile</span>: <span style="color:#ae81ff">Dockerfile  </span> <span style="color:#75715e"># 指定Dockerfile文件名称</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">image</span>: <span style="color:#ae81ff">ssm:1.0.1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">container_name</span>: <span style="color:#ae81ff">ssm</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">8081</span>:<span style="color:#ae81ff">8080</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">environment</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">TZ</span>: <span style="color:#ae81ff">Asia/Shanghai</span>
+</span></span></code></pre></div><h5 id="1042-dockerfile文件">10.4.2 Dockerfile文件</h5>
+<blockquote>
+<p>编写Dockerfile文件</p>
+</blockquote>
+<pre tabindex="0"><code>from daocloud.io/library/tomcat:8.5.15-jre8
+copy ssm.war /usr/local/tomcat/webapps
+</code></pre><h5 id="1043-运行">10.4.3 运行</h5>
+<blockquote>
+<p>测试效果</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e"># 可以直接启动基于docker-compose.yml以及Dockerfile文件构建的自定义镜像</span>
+</span></span><span style="display:flex;"><span>docker-compose up -d
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 如果自定义镜像不存在，会帮助我们构建出自定义镜像，如果自定义镜像已经存在，会直接运行这个自定义镜像</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 重新构建的话。</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 重新构建自定义镜像</span>
+</span></span><span style="display:flex;"><span>docker-compose build
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 运行当前内容，并重新构建</span>
+</span></span><span style="display:flex;"><span>docker-compose up -d --build
+</span></span></code></pre></div><h3 id="十一-docker-cicd">十一. Docker CI、CD</h3>
+<hr>
+<h4 id="111-cicd引言">11.1 CI、CD引言</h4>
+<blockquote>
+<p>项目部署</p>
+<ul>
+<li>将项目通过maven进行编译打包</li>
+<li>将文件上传到指定的服务器中</li>
+<li>将war包放到tomcat的目录中</li>
+<li>通过Dockerfile将Tomcat和war包转成一个镜像，由DockerCompose去运行容器</li>
+</ul>
+<p>项目更新后，需要将上述流程再次的从头到尾的执行一次，如果每次更新一次都执行一次上述操作，很费时，费力。我们就可以通过CI、CD帮助我们实现持续集成，持续交付和部署。</p>
+</blockquote>
+<h4 id="112-ci介绍">11.2 CI介绍</h4>
+<blockquote>
+<p>CI（continuous intergration）持续集成</p>
+<p>持续集成：编写代码时，完成了一个功能后，立即提交代码到Git仓库中，将项目重新的构建并且测试。</p>
+<ul>
+<li>快速发现错误。</li>
+<li>防止代码偏离主分支。</li>
+</ul>
+</blockquote>
+<h4 id="113-搭建gitlab服务器">11.3 搭建Gitlab服务器</h4>
+<blockquote>
+<p>实现CI，需要使用到Gitlab远程仓库，先通过Docker搭建Gitlab</p>
+</blockquote>
+<h5 id="1131-准备工作">11.3.1 准备工作</h5>
+<blockquote>
+<ul>
+<li>创建一个全新的虚拟机，并且至少指定4G的运行内存，4G运行内存是Gitlab推荐的内存大小。</li>
+<li>并且安装Docker以及Docker-Compose</li>
+</ul>
+</blockquote>
+<h5 id="1132-修改ssh的22端口">11.3.2 修改ssh的22端口</h5>
+<blockquote>
+<p>将ssh的默认22端口，修改为60022端口，因为Gitlab需要占用22端口</p>
+</blockquote>
+<pre tabindex="0"><code>vi /etc/ssh/sshd_config
+  PORT 22 -&gt; 60022
+systemctl restart sshd
+</code></pre><h5 id="1133-编写docker-composeyml">11.3.3 编写docker-compose.yml</h5>
+<blockquote>
+<p>docker-compose.yml文件去安装gitlab（下载和运行的时间比较长的）</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#39;3.1&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">services</span>:
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">gitlab</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">image</span>: <span style="color:#e6db74">&#39;twang2218/gitlab-ce-zh:11.1.4&#39;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">container_name</span>: <span style="color:#e6db74">&#34;gitlab&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">privileged</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">hostname</span>: <span style="color:#e6db74">&#39;gitlab&#39;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">environment</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">TZ</span>: <span style="color:#e6db74">&#39;Asia/Shanghai&#39;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">GITLAB_OMNIBUS_CONFIG</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    external_url &#39;http://192.168.199.110&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    gitlab_rails[&#39;time_zone&#39;] = &#39;Asia/Shanghai&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    gitlab_rails[&#39;smtp_enable&#39;] = true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    gitlab_rails[&#39;gitlab_shell_ssh_port&#39;] = 22</span>    
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>   - <span style="color:#e6db74">&#39;80:80&#39;</span>
+</span></span><span style="display:flex;"><span>   - <span style="color:#e6db74">&#39;443:443&#39;</span>
+</span></span><span style="display:flex;"><span>   - <span style="color:#e6db74">&#39;22:22&#39;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">volumes</span>:
+</span></span><span style="display:flex;"><span>   - <span style="color:#ae81ff">/opt/docker_gitlab/config:/etc/gitlab</span>
+</span></span><span style="display:flex;"><span>   - <span style="color:#ae81ff">/opt/docker_gitlab/data:/var/opt/gitlab</span>
+</span></span><span style="display:flex;"><span>   - <span style="color:#ae81ff">/opt/docker_gitlab/logs:/var/log/gitlab</span>
+</span></span></code></pre></div><h4 id="114-搭建gitlabrunner">11.4 搭建GitlabRunner</h4>
+<blockquote>
+<p>查看资料中的gitlab-runner文件即可安装</p>
+</blockquote>
+<h4 id="115-整合项目入门测试">11.5 整合项目入门测试</h4>
+<h5 id="1151-创建项目">11.5.1 创建项目</h5>
+<blockquote>
+<p>创建maven工程，添加web.xml文件，编写html页面</p>
+</blockquote>
+<h5 id="1152-编写gitlab-ciyml">11.5.2 编写.gitlab-ci.yml</h5>
+<blockquote>
+<p>编写<a href="">.gitlab-ci.yml</a>文件</p>
+</blockquote>
+<pre tabindex="0"><code>stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - echo first test ci   # 输入的命令
+</code></pre><h5 id="1153-将maven工程推送到gitlab中">11.5.3 将maven工程推送到gitlab中</h5>
+<blockquote>
+<p>执行git命令推送到Gitlab</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>git push origin master
+</span></span></code></pre></div><h5 id="1154-查看效果">11.5.4 查看效果</h5>
+<blockquote>
+<p>可以在gitlab中查看到gitlab-ci.yml编写的内容</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">效果图</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588671760385.png" alt="1588671760385"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="116-完善项目配置">11.6 完善项目配置</h4>
+<blockquote>
+<p>添加Dockerfile以及docker-compose.yml， 并修改<a href="">.gitlab-ci.yml</a>文件</p>
+</blockquote>
+<h5 id="1161-创建dockerfile">11.6.1 创建Dockerfile</h5>
+<pre tabindex="0"><code># Dockerfile
+FROM daocloud.io/library/tomcat:8.5.15-jre8
+COPY testci.war /usr/local/tomcat/webapps
+</code></pre><h5 id="1162-创建docker-composeyml">11.6.2 创建docker-compose.yml</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#75715e"># docker-compose.yml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3.1&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">services</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">testci</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">build</span>: <span style="color:#ae81ff">docker</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">container_name</span>: <span style="color:#ae81ff">testci</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">8080</span>:<span style="color:#ae81ff">8080</span>
+</span></span></code></pre></div><h5 id="1163-修改gitlab-ciyml">11.6.3 修改.gitlab-ci.yml</h5>
+<pre tabindex="0"><code># ci.yml
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - echo first test ci
+    - /usr/local/maven/apache-maven-3.6.3/bin/mvn package
+    - cp target/testci-1.0-SNAPSHOT.war docker/testci.war
+    - docker-compose down
+    - docker-compose up -d --build
+    - docker rmi $(docker images -qf dangling=true)
+</code></pre><h5 id="1164-测试">11.6.4 测试</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">测试效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588674040060.png" alt="1588674040060"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="117-cd介绍">11.7 CD介绍</h4>
+<blockquote>
+<p>CD（持续交付，持续部署）</p>
+<p>持续交付：将代码交付给专业的测试团队去测试</p>
+<p>持续部署：可以直接将指定好tag的代码直接部署到生产环境中</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">CICD图</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588677492583.png" alt="1588677492583"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="118-安装jenkins">11.8 安装Jenkins</h4>
+<h5 id="1181-编写docker-composeyml">11.8.1 编写docker-compose.yml</h5>
+<blockquote>
+<p>官网：https://www.jenkins.io/</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3.1&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">services</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">jenkins</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">image</span>: <span style="color:#ae81ff">jenkins/jenkins</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">container_name</span>: <span style="color:#ae81ff">jenkins</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>     - <span style="color:#ae81ff">8888</span>:<span style="color:#ae81ff">8080</span>
+</span></span><span style="display:flex;"><span>     - <span style="color:#ae81ff">50000</span>:<span style="color:#ae81ff">50000</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">volumes</span>:
+</span></span><span style="display:flex;"><span>     - <span style="color:#ae81ff">./data:/var/jenkins_home</span>
+</span></span></code></pre></div><h5 id="1182-运行并访问jenkins">11.8.2 运行并访问Jenkins</h5>
+<blockquote>
+<p>第一次运行时，会因为data目录没有权限，导致启动失败</p>
+</blockquote>
+<pre tabindex="0"><code>chmod 777 data
+</code></pre><blockquote>
+<p>访问http://192.168.199.109:8888</p>
+</blockquote>
+<pre tabindex="0"><code>访问速度奇慢无比。。。。。
+</code></pre><blockquote>
+<p>访问成功后，需要输入密码，可在日志中查看</p>
+</blockquote>
+<p><img src="/Pictures/1588679573467.png" alt="1588679573467"></p>
+<blockquote>
+<p>手动指定插件安装：指定下面两个插件即可</p>
+<p>publish ssh.</p>
+<p>git param.</p>
+</blockquote>
+<p><img src="/Pictures/1588679653006.png" alt="1588679653006"></p>
+<blockquote>
+<p>安装成功后，需要指定上用户名和密码，登陆成功</p>
+</blockquote>
+<p><img src="/Pictures/1588681196639.png" alt="1588681196639"></p>
+<h4 id="119-配置jenkins的目标服务器">11.9 配置Jenkins的目标服务器</h4>
+<blockquote>
+<p>执行过程为代码提交到Gitlab，Jenkins会从Gitlab中拉取代码，并在Jenkins中打包并发布到目标服务器中。</p>
+</blockquote>
+<h5 id="1191-点击左侧的系统设置">11.9.1 点击左侧的系统设置</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">左侧导航</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588681954779.png" alt="1588681954779"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="1192-选中中间区域的系统设置">11.9.2 选中中间区域的系统设置</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">系统设置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588681970621.png" alt="1588681970621"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="1193-搜索publish-over-ssh">11.9.3 搜索Publish over SSH</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Publish over SSH</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588682011820.png" alt="1588682011820"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="1194-点击上图新增">11.9.4 点击上图新增</h5>
+<table>
+<thead>
+<tr>
+<th>新增SSH连接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="/Pictures/1588682092002.png" alt="1588682092002"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="1110-配置gitlab免密码登录">11.10 配置GitLab免密码登录</h4>
+<blockquote>
+<p>链接Gitlab需要使用密码，我们可以通过SSH的方式，免密码登陆Gitlab拉取代码，避免每次都输入密码。</p>
+</blockquote>
+<h5 id="11101登录jenkins容器内部">11.10.1登录Jenkins容器内部</h5>
+<pre tabindex="0"><code>docker exec -it jenkins bash
+</code></pre><h5 id="11102-输入生成ssh秘钥命令">11.10.2 输入生成SSH秘钥命令</h5>
+<pre tabindex="0"><code>ssh-keygen -t rsa -C &#34;邮箱（随便写）&#34;
+</code></pre><h5 id="11103将秘钥复制到gitlab的ssh中">11.10.3将秘钥复制到GitLab的SSH中</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">配置密钥</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588683585249.png" alt="1588683585249"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="1111-配置jdk和maven">11.11 配置JDK和Maven</h4>
+<blockquote>
+<p>我们需要再Jenkins中将代码打包，需要依赖JDK和Maven的环境</p>
+</blockquote>
+<h5 id="11111-复制软件到data目录下">11.11.1 复制软件到data目录下</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588684490466.png" alt="1588684490466"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11112-在监控界面中配置jdk和maven">11.11.2 在监控界面中配置JDK和Maven</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">配置环境变量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588684458028.png" alt="1588684458028"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11113-手动拉取gitlab项目">11.11.3 手动拉取gitlab项目</h5>
+<blockquote>
+<p>使用SSH无密码连接时，第一次连接需要手动确定</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">手动拉取一次</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588685220324.png" alt="1588685220324"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="1112-创建maven任务">11.12 创建maven任务</h4>
+<blockquote>
+<p>实现通过Jenkins的Maven任务，自动去Gitlab拉取代码，并在本地打包，发布到目标服务器上</p>
+</blockquote>
+<h5 id="11121-创建maven工程推送到gitlab中">11.12.1 创建maven工程，推送到GitLab中</h5>
+<blockquote>
+<p>随便创建一个即可……</p>
+</blockquote>
+<h5 id="11122-jenkins的监控页面中创建maven任务">11.12.2 Jenkins的监控页面中创建maven任务</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">指定GitLab地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588686481506.png" alt="1588686481506"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">指定maven打包方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588686489821.png" alt="1588686489821"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11123-执行maven任务">11.12.3 执行maven任务</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">立即构建，并查看日志</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588686591351.png" alt="1588686591351"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">控制台查看日志信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588686553880.png" alt="1588686553880"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11124-最终效果">11.12.4 最终效果</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">打包成功</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588687382594.png" alt="1588687382594"></td>
+</tr>
+</tbody>
+</table>
+<h4 id="1113-实现持续交付持续部署">11.13 实现持续交付持续部署</h4>
+<blockquote>
+<p>实现根据tag标签，实现持续交付和持续部署</p>
+</blockquote>
+<h5 id="11131-安装persistent-parameter的插件">11.13.1 安装Persistent Parameter的插件</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">安装插件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588693533099.png" alt="1588693533099"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11132-重新指定构建项目的方式">11.13.2 重新指定构建项目的方式</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">根据标签构建项目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588696879059.png" alt="1588696879059"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">自定义构建</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588697752850.png" alt="1588697752850"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11133-构建项目成功后需要将内容发布到目标服务器">11.13.3 构建项目成功后，需要将内容发布到目标服务器</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">发布服务器后执行的命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588697770621.png" alt="1588697770621"></td>
+</tr>
+</tbody>
+</table>
+<h5 id="11134-添加程序代码">11.13.4 添加程序代码</h5>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yml" data-lang="yml"><span style="display:flex;"><span><span style="color:#75715e"># Dockerfile 文件</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">FROM daocloud.io/library/tomcat:8.5.15-jre8</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">COPY testcd-1.0-SNAPSHOT.war /usr/local/tomcat/webapps</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># docker-compose.yml文件</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;3.1&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">services</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">testcd</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">build</span>: <span style="color:#ae81ff">docker</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">restart</span>: <span style="color:#ae81ff">always</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">container_name</span>: <span style="color:#ae81ff">testcd</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">8081</span>:<span style="color:#ae81ff">8080</span>
+</span></span></code></pre></div><h5 id="11135-测试">11.13.5 测试</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">根据标签修改发布版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/Pictures/1588700462690.png" alt="1588700462690"></td>
+</tr>
+</tbody>
+</table>
+<p>，</p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>

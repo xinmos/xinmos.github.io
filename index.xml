@@ -17,6 +17,15 @@
     </item>
     
     <item>
+      <title>Docker</title>
+      <link>http://xinmos.github.io/docker/docker/</link>
+      <pubDate>Fri, 19 May 2023 21:54:41 +0800</pubDate>
+      
+      <guid>http://xinmos.github.io/docker/docker/</guid>
+      <description>一、引言 1.1 环境不一致 我本地运行没问题啊：由于环境不一致，导致相同的程序，运行结果却不一致。 1.2 隔离性 哪个哥们又写死循环了，怎么这么卡：在多用户</description>
+    </item>
+    
+    <item>
       <title>Git</title>
       <link>http://xinmos.github.io/git/git/</link>
       <pubDate>Fri, 19 May 2023 21:54:41 +0800</pubDate>
