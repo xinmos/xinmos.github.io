@@ -34,5 +34,14 @@
       <description>最好使用自带的 git bash 工具 提交注释说明 feat: 添加代码 doc：文档 fix：修复bug refact: 修改代码 常用命令 撤销本地修改 git checkout . 删除本地分支 git branch -d &amp;lt;branch&amp;gt; 当一个分支</description>
     </item>
     
+    <item>
+      <title>Python Asyncio</title>
+      <link>http://xinmos.github.io/python/python-acynico/</link>
+      <pubDate>Fri, 19 May 2023 21:54:41 +0800</pubDate>
+      
+      <guid>http://xinmos.github.io/python/python-acynico/</guid>
+      <description>协程 一个抽象概念，在计算机中不存在 协程（Coroutione），也可以被称为微线程，是一种用户态内的上下文切换技术。 实现方法 yield 关键字 asyncio 装饰器</description>
+    </item>
+    
   </channel>
 </rss>
