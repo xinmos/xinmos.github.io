@@ -6,7 +6,25 @@
     <description>Recent content in Pythons on 牧阳的星</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 19 May 2023 21:54:41 +0800</lastBuildDate><atom:link href="http://xinmos.github.io/python/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 22 May 2023 20:42:04 +0800</lastBuildDate><atom:link href="http://xinmos.github.io/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Python flask 框架</title>
+      <link>http://xinmos.github.io/python/python-flask-%E6%A1%86%E6%9E%B6/</link>
+      <pubDate>Mon, 22 May 2023 20:42:04 +0800</pubDate>
+      
+      <guid>http://xinmos.github.io/python/python-flask-%E6%A1%86%E6%9E%B6/</guid>
+      <description>写一个通用的小型 flask 框架 目录结构 flask_demo: -- api: -- file -- file.py -- __init__.py -- utils -- log.py -- restful.py -- model -- file.py -- service -- file.py -- manage.py -- requirements.txt 基准代码 api/__init__.py from flask import Flask, Blueprint from flask_cors import CORS from flask_demo.api.file.file import bp as file_bp def create_app(): setup_log(log_level=&amp;#34;debug&amp;#34;, log_handler=&amp;#34;file&amp;#34;, log_dir=&amp;#34;./logs&amp;#34;, log_file_name=&amp;#34;app.log&amp;#34;) app =</description>
+    </item>
+    
+    <item>
+      <title>Python日志json格式</title>
+      <link>http://xinmos.github.io/python/python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/</link>
+      <pubDate>Mon, 22 May 2023 20:42:04 +0800</pubDate>
+      
+      <guid>http://xinmos.github.io/python/python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/</guid>
+      <description>python 在工作中的 log 日志一般是以特殊符号分开的方式，这样的形式方便 debug 查阅，但是并不利于数据处理与分析。json 格式就很不错，可以更好地组织、分析和</description>
+    </item>
+    
     <item>
       <title>Python Asyncio</title>
       <link>http://xinmos.github.io/python/python-asynico/</link>
