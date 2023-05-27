@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Python celery 集成 // 牧阳的星</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.111.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="牧阳的星" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Python celery 集成"/>
+<meta name="twitter:description" content="celery==5.2.7, redis==4.5.5 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&#34;CELERY&#34;]) celery_app.set_default() app.extensions[&#34;celery&#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&#34;redis://localhost:6379/0&#34;, result_backend=&#34;redis://localhost:6379/1&#34;, task_ignore_result=True, task_serializer=&#39;json&#39;, accept_content=[&#39;json&#39;], result_serializer=&#39;json&#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ... another code 在 app.py app = create_app() celery = app.extensions[&#34;celery&#34;] 在 utils/tasks.py 中添加任务 不要在 task 方法中调用其"/>
+
+    <meta property="og:title" content="Python celery 集成" />
+<meta property="og:description" content="celery==5.2.7, redis==4.5.5 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&#34;CELERY&#34;]) celery_app.set_default() app.extensions[&#34;celery&#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&#34;redis://localhost:6379/0&#34;, result_backend=&#34;redis://localhost:6379/1&#34;, task_ignore_result=True, task_serializer=&#39;json&#39;, accept_content=[&#39;json&#39;], result_serializer=&#39;json&#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ... another code 在 app.py app = create_app() celery = app.extensions[&#34;celery&#34;] 在 utils/tasks.py 中添加任务 不要在 task 方法中调用其" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://xinmos.github.io/python/python-celery-%E9%9B%86%E6%88%90/" /><meta property="article:section" content="python" />
+<meta property="article:published_time" content="2023-05-22T20:42:04+08:00" />
+<meta property="article:modified_time" content="2023-05-22T20:42:04+08:00" />
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="http://xinmos.github.io"><img class="app-header-avatar" src="/images/head.png" alt="牧阳的星" /></a>
+      <span class="app-header-title">牧阳的星</span>
+      <nav class="app-header-menu">
+          <a class="app-header-menu-item" href="/docker/">docker</a>
+             
+          
+          <a class="app-header-menu-item" href="/git/">git</a>
+             
+          
+          <a class="app-header-menu-item" href="/java/">java</a>
+             
+          
+          <a class="app-header-menu-item" href="/python/">python</a>
+      </nav>
+      <p>人生就像一杯茶，不会苦一辈子，但总会苦一阵子。</p>
+      <div class="app-header-social">
+        
+          <a href="https://github.com/xinmos" target="_blank" rel="noreferrer noopener me">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>My Github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg>
+          </a>
+        
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Python celery 集成</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 22, 2023
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          1 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <blockquote>
+<p>celery==5.2.7, redis==4.5.5</p>
+</blockquote>
+<p><strong>在 <code>api/__init__.py</code> 中添加以下方法</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">celery_init_app</span>(app):
+</span></span><span style="display:flex;"><span>    celery_app <span style="color:#f92672">=</span> Celery(app<span style="color:#f92672">.</span>name)
+</span></span><span style="display:flex;"><span>    celery_app<span style="color:#f92672">.</span>config_from_object(app<span style="color:#f92672">.</span>config[<span style="color:#e6db74">&#34;CELERY&#34;</span>])
+</span></span><span style="display:flex;"><span>    celery_app<span style="color:#f92672">.</span>set_default()
+</span></span><span style="display:flex;"><span>    app<span style="color:#f92672">.</span>extensions[<span style="color:#e6db74">&#34;celery&#34;</span>] <span style="color:#f92672">=</span> celery_app
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> celery_app
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">creat_app</span>():
+</span></span><span style="display:flex;"><span>	<span style="color:#f92672">...</span>some code
+</span></span><span style="display:flex;"><span>	app <span style="color:#f92672">=</span> Flask(__name__)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    app<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>from_mapping(
+</span></span><span style="display:flex;"><span>        CELERY<span style="color:#f92672">=</span>dict(
+</span></span><span style="display:flex;"><span>            broker_url<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;redis://localhost:6379/0&#34;</span>,
+</span></span><span style="display:flex;"><span>            result_backend<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;redis://localhost:6379/1&#34;</span>,
+</span></span><span style="display:flex;"><span>            task_ignore_result<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>            task_serializer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;json&#39;</span>,
+</span></span><span style="display:flex;"><span>            accept_content<span style="color:#f92672">=</span>[<span style="color:#e6db74">&#39;json&#39;</span>],
+</span></span><span style="display:flex;"><span>            result_serializer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;json&#39;</span>
+</span></span><span style="display:flex;"><span>        ),
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    app<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>from_prefixed_env()
+</span></span><span style="display:flex;"><span>    celery_init_app(app)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span> another code
+</span></span></code></pre></div><p><strong>在 <code>app.py</code></strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>app <span style="color:#f92672">=</span> create_app()
+</span></span><span style="display:flex;"><span>celery <span style="color:#f92672">=</span> app<span style="color:#f92672">.</span>extensions[<span style="color:#e6db74">&#34;celery&#34;</span>]
+</span></span></code></pre></div><p><strong>在 <code>utils/tasks.py</code> 中添加任务</strong></p>
+<p>不要在 task 方法中调用其他类的方法，task 方法是异步任务，调用其他方法会报错</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> __future__ <span style="color:#f92672">import</span> absolute_import, unicode_literals
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> time
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> celery <span style="color:#f92672">import</span> shared_task
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@shared_task</span>(ignore_result<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test1</span>(x, y):
+</span></span><span style="display:flex;"><span>    time<span style="color:#f92672">.</span>sleep(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x <span style="color:#f92672">+</span> y
+</span></span></code></pre></div><p><em>注意：直接按照 flask 官方文档配置会有错误出现</em></p>
+<p>celery 启动方式</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span><span style="color:#75715e"># windows 只能用 threads 启动，否则任务无法执行</span>
+</span></span><span style="display:flex;"><span>celery -A app.celery worker -c <span style="color:#ae81ff">4</span> -l info -P threads
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>参数说明：
+</span></span><span style="display:flex;"><span>	app:celery 	<span style="color:#75715e"># app 指的是 app.py celery 是 app.py 中的 celery 对象</span>
+</span></span><span style="display:flex;"><span>	-P 	<span style="color:#75715e"># 启动方式:</span>
+</span></span><span style="display:flex;"><span>			prefork：默认的并发方式，即多进程的方式。
+</span></span><span style="display:flex;"><span>			eventlet：使用eventlet方式启动worker。
+</span></span><span style="display:flex;"><span>			gevent：使用gevent方式启动worker。
+</span></span><span style="display:flex;"><span>			solo：单进程的方式。
+</span></span><span style="display:flex;"><span>			threads：使用线程的方式
+</span></span><span style="display:flex;"><span>	-l 	<span style="color:#75715e"># log 级别</span>
+</span></span><span style="display:flex;"><span>	-c 	<span style="color:#75715e"># worker 数量</span>
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>当 -P 指定为 gevent 或 eventlet 时，需要安装对应的依赖
+</span></span></code></pre></div><p>celery task 的结果默认存储时间是 1 天，可以通过 <code>result_expires</code> 配置</p>
+
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
