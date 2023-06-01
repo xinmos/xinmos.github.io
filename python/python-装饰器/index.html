@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Python 装饰器 // 牧阳的星</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.111.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="牧阳的星" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/main.min.3c3c186cd62e563ad6e2f00a89dbee656ab912d1d46f856b5605dd0232521e2a.css" />
+
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Python 装饰器"/>
+<meta name="twitter:description" content="在 python flask 一文中 utils/log.py 中定义了一个装饰器，用于将所有的网络请求记入到日志中 那如何定义一个带参数的装饰器呢？ 最简单的装饰器 from functools import wraps def decorator(func): def wrapper(*args, **kwargs): # 添加额外"/>
+
+    <meta property="og:title" content="Python 装饰器" />
+<meta property="og:description" content="在 python flask 一文中 utils/log.py 中定义了一个装饰器，用于将所有的网络请求记入到日志中 那如何定义一个带参数的装饰器呢？ 最简单的装饰器 from functools import wraps def decorator(func): def wrapper(*args, **kwargs): # 添加额外" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://xinmos.github.io/python/python-%E8%A3%85%E9%A5%B0%E5%99%A8/" /><meta property="article:section" content="python" />
+<meta property="article:published_time" content="2023-05-19T21:54:41+08:00" />
+<meta property="article:modified_time" content="2023-05-19T21:54:41+08:00" />
+
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="http://xinmos.github.io"><img class="app-header-avatar" src="/images/head.png" alt="牧阳的星" /></a>
+      <span class="app-header-title">牧阳的星</span>
+      <nav class="app-header-menu">
+          <a class="app-header-menu-item" href="/docker/">docker</a>
+             
+          
+          <a class="app-header-menu-item" href="/git/">git</a>
+             
+          
+          <a class="app-header-menu-item" href="/java/">java</a>
+             
+          
+          <a class="app-header-menu-item" href="/python/">python</a>
+      </nav>
+      <p>人生就像一杯茶，不会苦一辈子，但总会苦一阵子。</p>
+      <div class="app-header-social">
+        
+          <a href="https://github.com/xinmos" target="_blank" rel="noreferrer noopener me">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>My Github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg>
+          </a>
+        
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">Python 装饰器</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          May 19, 2023
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+    </header>
+    <div class="post-content">
+      <p>在 python flask 一文中 <code>utils/log.py</code> 中定义了一个装饰器，用于将所有的网络请求记入到日志中</p>
+<p>那如何定义一个带参数的装饰器呢？</p>
+<h2 id="最简单的装饰器">最简单的装饰器</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> functools <span style="color:#f92672">import</span> wraps
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decorator</span>(func):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># 添加额外的功能或修改行为</span>
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;在调用函数之前做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs)
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;在调用函数之后做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> wrapper
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decorator2</span>(func):
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@wraps</span>(func)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># 添加额外的功能或修改行为</span>
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;在调用函数之前做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs)
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;在调用函数之后做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> wrapper
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@decorator</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test1</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;run test1&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@decorator2</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test2</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;run test2&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+</span></span><span style="display:flex;"><span>    test1()
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;test1 func name: &#34;</span>, test1<span style="color:#f92672">.</span>__name__)
+</span></span><span style="display:flex;"><span>    test2()
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;test2 func name: &#34;</span>, test2<span style="color:#f92672">.</span>__name__)
+</span></span></code></pre></div><p>输出:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>在调用函数之前做一些事情
+</span></span><span style="display:flex;"><span>run test1
+</span></span><span style="display:flex;"><span>在调用函数之后做一些事情
+</span></span><span style="display:flex;"><span>test1 func name:  wrapper
+</span></span><span style="display:flex;"><span>在调用函数之前做一些事情
+</span></span><span style="display:flex;"><span>run test2
+</span></span><span style="display:flex;"><span>在调用函数之后做一些事情
+</span></span><span style="display:flex;"><span>test2 func name:  test2
+</span></span></code></pre></div><h3 id="wraps-作用">@wraps 作用</h3>
+<p>@wraps是Python中的一个装饰器，它可以用来将被装饰函数的元信息（如函数名、参数列表等）复制到装饰器函数中，从而<strong>使得装饰器函数也具有被装饰函数的元信息</strong>。这样做的好处是，可以让被装饰函数在使用时更加方便，因为它们的元信息不会被修改</p>
+<h2 id="带参数的装饰器">带参数的装饰器</h2>
+<p>在装饰器的外面再包裹一层</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> functools <span style="color:#f92672">import</span> wraps
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">log_request</span>(on<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decorator</span>(func):
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">@wraps</span>(func)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#34;args: on=&#34;</span>, on)
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#34;在调用函数之前做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>            result <span style="color:#f92672">=</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs)
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#34;在调用函数之后做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> result
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> wrapper
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> decorator
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@log_request</span>(on<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;run test&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+</span></span><span style="display:flex;"><span>    test()
+</span></span></code></pre></div><p>输出：</p>
+<pre tabindex="0"><code>args: on= False
+在调用函数之前做一些事情
+run test
+在调用函数之后做一些事情
+</code></pre><p>可以使用 <code>@log_request()</code> 但是<em>无法直接使用</em> <code>@log_request</code>，即使 on 已经设置了默认值。</p>
+<h2 id="兼容型装饰器">兼容型装饰器</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> functools <span style="color:#f92672">import</span> wraps
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">log_request</span>(origin_func<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, on<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decorator</span>(func):
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">@wraps</span>(func)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">wrapper</span>(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#34;args: on=&#34;</span>, on)
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#34;在调用函数之前做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>            result <span style="color:#f92672">=</span> func(<span style="color:#f92672">*</span>args, <span style="color:#f92672">**</span>kwargs)
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#34;在调用函数之后做一些事情&#34;</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> result
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> wrapper
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> origin_func <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> decorator
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> decorator(origin_func)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@log_request</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;run test&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@log_request</span>()
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test2</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;run test2&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@log_request</span>(on<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">test3</span>():
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;run test3&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;__main__&#39;</span>:
+</span></span><span style="display:flex;"><span>    test()
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;-------------&#34;</span>)
+</span></span><span style="display:flex;"><span>    test2()
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;-------------&#34;</span>)
+</span></span><span style="display:flex;"><span>    test3()
+</span></span></code></pre></div><p>输出：</p>
+<pre tabindex="0"><code>args: on= True
+在调用函数之前做一些事情
+run test
+在调用函数之后做一些事情
+-------------
+args: on= True
+在调用函数之前做一些事情
+run test2
+在调用函数之后做一些事情
+-------------
+args: on= False
+在调用函数之前做一些事情
+run test3
+在调用函数之后做一些事情
+</code></pre>
+    </div>
+    <div class="post-footer">
+      
+    </div>
+  </article>
+
+    </main>
+  </body>
+</html>
