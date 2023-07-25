@@ -6,14 +6,23 @@
     <description>Recent content in Pythons on 牧阳的星</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 22 May 2023 20:42:04 +0800</lastBuildDate><atom:link href="http://xinmos.github.io/python/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Jul 2023 20:42:04 +0800</lastBuildDate><atom:link href="http://xinmos.github.io/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Python ORM 集成</title>
+      <link>http://xinmos.github.io/python/python-orm-%E9%9B%86%E6%88%90/</link>
+      <pubDate>Tue, 25 Jul 2023 20:42:04 +0800</pubDate>
+      
+      <guid>http://xinmos.github.io/python/python-orm-%E9%9B%86%E6%88%90/</guid>
+      <description>python 常用的 ORM 框架非 flask_sqlalchemy 莫属，当然也可以自己直接根据 sqlalchemy 进行封装 flask_sqlalchemy==3.0.5 pymysql==1.1.0 目录结构 flask_demo: -- api: -- file -- file.py -- user -- user.py -- __init__.py -- utils -- log.py -- database.py -- restful.py -- model -- user.py -- service -- user.py -- manage.py -- requirements.txt 代码 utils/database.py</description>
+    </item>
+    
     <item>
       <title>Python celery 集成</title>
       <link>http://xinmos.github.io/python/python-celery-%E9%9B%86%E6%88%90/</link>
       <pubDate>Mon, 22 May 2023 20:42:04 +0800</pubDate>
       
       <guid>http://xinmos.github.io/python/python-celery-%E9%9B%86%E6%88%90/</guid>
-      <description>celery==5.2.7, redis==4.5.5 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&amp;#34;CELERY&amp;#34;]) celery_app.set_default() app.extensions[&amp;#34;celery&amp;#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&amp;#34;redis://localhost:6379/0&amp;#34;, result_backend=&amp;#34;redis://localhost:6379/1&amp;#34;, task_ignore_result=True, task_serializer=&amp;#39;json&amp;#39;, accept_content=[&amp;#39;json&amp;#39;], result_serializer=&amp;#39;json&amp;#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ... another code 在 app.py app = create_app() celery = app.extensions[&amp;#34;celery&amp;#34;] 在 utils/tasks.py 中添加任务 不要在 task 方法中调用其</description>
+      <description>celery==5.2.7, redis==4.5.5 目录结构 flask_demo: -- api: -- celery -- celery.py -- file -- file.py -- __init__.py -- utils -- log.py -- restful.py -- manage.py -- requirements.txt 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&amp;#34;CELERY&amp;#34;]) celery_app.set_default() app.extensions[&amp;#34;celery&amp;#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&amp;#34;redis://localhost:6379/0&amp;#34;, result_backend=&amp;#34;redis://localhost:6379/1&amp;#34;, task_ignore_result=True, task_serializer=&amp;#39;json&amp;#39;, accept_content=[&amp;#39;json&amp;#39;], result_serializer=&amp;#39;json&amp;#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ...</description>
     </item>
     
     <item>
@@ -22,7 +31,7 @@
       <pubDate>Mon, 22 May 2023 20:42:04 +0800</pubDate>
       
       <guid>http://xinmos.github.io/python/python-flask-%E6%A1%86%E6%9E%B6/</guid>
-      <description>写一个通用的小型 flask 框架 目录结构 flask_demo: -- api: -- file -- file.py -- __init__.py -- utils -- log.py -- restful.py -- model -- file.py -- service -- file.py -- manage.py -- requirements.txt 基准代码 api/__init__.py from flask import Flask, Blueprint from flask_cors import CORS from api.file.file import bp as file_bp def create_app(): setup_log(log_level=&amp;#34;debug&amp;#34;, log_handler=&amp;#34;file&amp;#34;, log_dir=&amp;#34;./logs&amp;#34;, log_file_name=&amp;#34;app.log&amp;#34;) app =</description>
+      <description>写一个通用的小型 flask 框架 目录结构 flask_demo: -- api: -- file -- file.py -- __init__.py -- utils -- log.py -- restful.py -- manage.py -- requirements.txt 基准代码 api/__init__.py from flask import Flask, Blueprint from flask_cors import CORS from api.file.file import bp as file_bp def create_app(): setup_log(log_level=&amp;#34;debug&amp;#34;, log_handler=&amp;#34;file&amp;#34;, log_dir=&amp;#34;./logs&amp;#34;, log_file_name=&amp;#34;app.log&amp;#34;) app = Flask(__name__) CORS(app) app_bp = Blueprint(&amp;#39;api&amp;#39;, __name__, url_prefix=&amp;#39;/api&amp;#39;) app_bp.register_blueprint(file_bp)</description>
     </item>
     
     <item>

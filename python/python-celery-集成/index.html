@@ -13,10 +13,10 @@
     
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Python celery 集成"/>
-<meta name="twitter:description" content="celery==5.2.7, redis==4.5.5 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&#34;CELERY&#34;]) celery_app.set_default() app.extensions[&#34;celery&#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&#34;redis://localhost:6379/0&#34;, result_backend=&#34;redis://localhost:6379/1&#34;, task_ignore_result=True, task_serializer=&#39;json&#39;, accept_content=[&#39;json&#39;], result_serializer=&#39;json&#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ... another code 在 app.py app = create_app() celery = app.extensions[&#34;celery&#34;] 在 utils/tasks.py 中添加任务 不要在 task 方法中调用其"/>
+<meta name="twitter:description" content="celery==5.2.7, redis==4.5.5 目录结构 flask_demo: -- api: -- celery -- celery.py -- file -- file.py -- __init__.py -- utils -- log.py -- restful.py -- manage.py -- requirements.txt 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&#34;CELERY&#34;]) celery_app.set_default() app.extensions[&#34;celery&#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&#34;redis://localhost:6379/0&#34;, result_backend=&#34;redis://localhost:6379/1&#34;, task_ignore_result=True, task_serializer=&#39;json&#39;, accept_content=[&#39;json&#39;], result_serializer=&#39;json&#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ..."/>
 
     <meta property="og:title" content="Python celery 集成" />
-<meta property="og:description" content="celery==5.2.7, redis==4.5.5 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&#34;CELERY&#34;]) celery_app.set_default() app.extensions[&#34;celery&#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&#34;redis://localhost:6379/0&#34;, result_backend=&#34;redis://localhost:6379/1&#34;, task_ignore_result=True, task_serializer=&#39;json&#39;, accept_content=[&#39;json&#39;], result_serializer=&#39;json&#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ... another code 在 app.py app = create_app() celery = app.extensions[&#34;celery&#34;] 在 utils/tasks.py 中添加任务 不要在 task 方法中调用其" />
+<meta property="og:description" content="celery==5.2.7, redis==4.5.5 目录结构 flask_demo: -- api: -- celery -- celery.py -- file -- file.py -- __init__.py -- utils -- log.py -- restful.py -- manage.py -- requirements.txt 在 api/__init__.py 中添加以下方法 def celery_init_app(app): celery_app = Celery(app.name) celery_app.config_from_object(app.config[&#34;CELERY&#34;]) celery_app.set_default() app.extensions[&#34;celery&#34;] = celery_app return celery_app def creat_app(): ...some code app = Flask(__name__) app.config.from_mapping( CELERY=dict( broker_url=&#34;redis://localhost:6379/0&#34;, result_backend=&#34;redis://localhost:6379/1&#34;, task_ignore_result=True, task_serializer=&#39;json&#39;, accept_content=[&#39;json&#39;], result_serializer=&#39;json&#39; ), ) app.config.from_prefixed_env() celery_init_app(app) ..." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://xinmos.github.io/python/python-celery-%E9%9B%86%E6%88%90/" /><meta property="article:section" content="python" />
 <meta property="article:published_time" content="2023-05-22T20:42:04+08:00" />
@@ -78,7 +78,20 @@
       <blockquote>
 <p>celery==5.2.7, redis==4.5.5</p>
 </blockquote>
-<p><strong>在 <code>api/__init__.py</code> 中添加以下方法</strong></p>
+<p>目录结构</p>
+<pre tabindex="0"><code>flask_demo:
+	-- api:
+		-- celery
+			-- celery.py
+		-- file
+			-- file.py
+		-- __init__.py
+	-- utils
+		-- log.py
+		-- restful.py
+	-- manage.py
+	-- requirements.txt
+</code></pre><p><strong>在 <code>api/__init__.py</code> 中添加以下方法</strong></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">celery_init_app</span>(app):
 </span></span><span style="display:flex;"><span>    celery_app <span style="color:#f92672">=</span> Celery(app<span style="color:#f92672">.</span>name)
 </span></span><span style="display:flex;"><span>    celery_app<span style="color:#f92672">.</span>config_from_object(app<span style="color:#f92672">.</span>config[<span style="color:#e6db74">&#34;CELERY&#34;</span>])

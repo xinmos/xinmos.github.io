@@ -2,19 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://xinmos.github.io/python/python-orm-%E9%9B%86%E6%88%90/</loc>
+    <lastmod>2023-07-25T20:42:04+08:00</lastmod>
+  </url><url>
+    <loc>http://xinmos.github.io/python/</loc>
+    <lastmod>2023-07-25T20:42:04+08:00</lastmod>
+  </url><url>
+    <loc>http://xinmos.github.io/</loc>
+    <lastmod>2023-07-25T20:42:04+08:00</lastmod>
+  </url><url>
     <loc>http://xinmos.github.io/python/python-celery-%E9%9B%86%E6%88%90/</loc>
     <lastmod>2023-05-22T20:42:04+08:00</lastmod>
   </url><url>
     <loc>http://xinmos.github.io/python/python-flask-%E6%A1%86%E6%9E%B6/</loc>
     <lastmod>2023-05-22T20:42:04+08:00</lastmod>
   </url><url>
-    <loc>http://xinmos.github.io/python/</loc>
-    <lastmod>2023-05-22T20:42:04+08:00</lastmod>
-  </url><url>
     <loc>http://xinmos.github.io/python/python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/</loc>
-    <lastmod>2023-05-22T20:42:04+08:00</lastmod>
-  </url><url>
-    <loc>http://xinmos.github.io/</loc>
     <lastmod>2023-05-22T20:42:04+08:00</lastmod>
   </url><url>
     <loc>http://xinmos.github.io/git/gitlab/</loc>
