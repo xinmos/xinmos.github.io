@@ -1,0 +1,712 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>uvicorn-源码浅读 - xinmos</title>
+
+  
+    <meta name="description" content="前记Uvicorn是一个基于uvloop和httptools的ASGI服务器, 性能比较强劲， 通过它可以与使用ASGI规范的Python应用程序进行交互。ASGI与WSGI很像， 只不过ASGI原生支持HTTP2.0和WebSocket， 同时更多的是支持Python的Asyncio生态的WEB应用程序。通过了解Uvicron，能知道一个稳定的Web服务器的工作方式以及能更好的去了解其他基于AS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="uvicorn-源码浅读">
+<meta property="og:url" content="http://xinmos.github.io/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="xinmos">
+<meta property="og:description" content="前记Uvicorn是一个基于uvloop和httptools的ASGI服务器, 性能比较强劲， 通过它可以与使用ASGI规范的Python应用程序进行交互。ASGI与WSGI很像， 只不过ASGI原生支持HTTP2.0和WebSocket， 同时更多的是支持Python的Asyncio生态的WEB应用程序。通过了解Uvicron，能知道一个稳定的Web服务器的工作方式以及能更好的去了解其他基于AS">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://xinmos.github.io/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/image-20240919225427742.png">
+<meta property="og:image" content="http://xinmos.github.io/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/image-20240919230035590.png">
+<meta property="og:image" content="http://xinmos.github.io/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/image-20240920015736527.png">
+<meta property="og:image" content="http://xinmos.github.io/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/image-20241007172635967.png">
+<meta property="article:published_time" content="2024-10-07T09:17:22.000Z">
+<meta property="article:modified_time" content="2024-10-07T09:28:15.664Z">
+<meta property="article:author" content="xinmos">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="uvicron">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://xinmos.github.io/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/image-20240919225427742.png">
+  
+  
+  
+  <meta name="keywords" content="python,uvicron">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/head.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">xinmos</div><div class="sub cap">牧阳的星</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="分类" href="/categories/" style="color:#3DC550"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M14.25 4.48v3.057c0 .111 0 .27.02.406a.936.936 0 0 0 .445.683a.96.96 0 0 0 .783.072c.13-.04.272-.108.378-.159L17 8.005l1.124.534c.106.05.248.119.378.16a.958.958 0 0 0 .783-.073a.936.936 0 0 0 .444-.683c.021-.136.021-.295.021-.406V3.031c.113-.005.224-.01.332-.013C21.154 2.98 22 3.86 22 4.933v11.21c0 1.112-.906 2.01-2.015 2.08c-.97.06-2.108.179-2.985.41c-1.082.286-1.99 1.068-3.373 1.436c-.626.167-1.324.257-1.627.323V5.174c.32-.079 1.382-.203 1.674-.371c.184-.107.377-.216.576-.323m5.478 8.338a.75.75 0 0 1-.546.91l-4 1a.75.75 0 0 1-.364-1.456l4-1a.75.75 0 0 1 .91.546" clip-rule="evenodd"/><path fill="currentColor" d="M18.25 3.151c-.62.073-1.23.18-1.75.336a8.2 8.2 0 0 0-.75.27v3.182l.75-.356l.008-.005a1.13 1.13 0 0 1 .492-.13c.047 0 .094.004.138.01c.175.029.315.1.354.12l.009.005l.749.356V3.647z"/><path fill="currentColor" d="M12 5.214c-.334-.064-1.057-.161-1.718-.339C8.938 4.515 8.05 3.765 7 3.487c-.887-.234-2.041-.352-3.018-.412C2.886 3.007 2 3.9 2 4.998v11.146c0 1.11.906 2.01 2.015 2.079c.97.06 2.108.179 2.985.41c.486.129 1.216.431 1.873.726c1.005.451 2.052.797 3.127 1.034z" opacity=".5"/><path fill="currentColor" d="M4.273 12.818a.75.75 0 0 1 .91-.545l4 1a.75.75 0 1 1-.365 1.455l-4-1a.75.75 0 0 1-.545-.91m.909-4.545a.75.75 0 1 0-.364 1.455l4 1a.75.75 0 0 0 .364-1.455z"/></svg></a><a class="nav-item" title="标签" href="/tags/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2024/10/07/uvicorn-%E6%BA%90%E7%A0%81%E6%B5%85%E8%AF%BB/"><span class="title">uvicorn-源码浅读</span></a><a class="item title" href="/2023/05/22/Python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/"><span class="title">Python日志json格式</span></a><a class="item title" href="/2023/05/19/Python-Asyncio/"><span class="title">Python Asyncio</span></a><a class="item title" href="/2023/05/19/Python-%E8%A3%85%E9%A5%B0%E5%99%A8/"><span class="title">Python 装饰器</span></a><a class="item title" href="/2023/05/19/Python-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="title">Python 文件上传</span></a><a class="item title" href="/2013/06/25/Python%20ORM%20%E9%9B%86%E6%88%90/"><span class="title">Python ORM 集成</span></a><a class="item title" href="/2023/05/22/Python%20flask%20%E6%A1%86%E6%9E%B6/"><span class="title">Python flask 框架</span></a><a class="item title" href="/2023/05/22/Python%20celery%20%E9%9B%86%E6%88%90/"><span class="title">Python celery 集成</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/xinmos" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/social/icons8-github-48.png"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-10-07T09:17:22.000Z">2024-10-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-10-07T09:28:15.664Z">2024-10-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>uvicorn-源码浅读</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h2 id="前记"><a href="#前记" class="headerlink" title="前记"></a><strong>前记</strong></h2><p><code>Uvicorn</code>是一个基于<code>uvloop</code>和<code>httptools</code>的ASGI服务器, 性能比较强劲， 通过它可以与使用ASGI规范的<code>Python</code>应用程序进行交互。ASGI与WSGI很像， 只不过ASGI原生支持HTTP2.0和WebSocket， 同时更多的是支持<code>Python</code>的<code>Asyncio</code>生态的WEB应用程序。通过了解<code>Uvicron</code>，能知道一个稳定的Web服务器的工作方式以及能更好的去了解其他基于ASGI的WEB应用程序</p>
+<h3 id="知识点-1"><a href="#知识点-1" class="headerlink" title="知识点 1"></a><strong>知识点 1</strong></h3><p><code>uvloop</code> 是一个用 Cython 编写的 asyncio 事件循环的快速替代品，它基于 <code>libuv</code>，这是一个高性能的跨平台异步 I&#x2F;O 库。<code>uvloop</code> 被设计为可以无缝替换 Python 标准库 <code>asyncio</code> 中的默认事件循环，从而提高异步编程的性能。它至少比 Node.js、gevent 以及其他 Python 异步框架要快两倍，其性能接近 Go 程序。</p>
+<p>开源仓库：<a target="_blank" rel="noopener" href="https://github.com/MagicStack/uvloop">https://github.com/MagicStack/uvloop</a></p>
+<p><strong>使用方法</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">pip install uvloop</span><br><span class="line">import asyncio</span><br><span class="line">import uvloop</span><br><span class="line"></span><br><span class="line">asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())</span><br><span class="line"># 编写asyncio的代码，与之前写的代码一致。</span><br><span class="line"># 内部的事件循环自动化会变为uvloop</span><br><span class="line">asyncio.run(...)</span><br></pre></td></tr></table></figure>
+
+<p><strong>在 uvicorn 中的使用</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">uvicorn/loops/auto.py</span><br><span class="line">def auto_loop_setup(use_subprocess: bool = False) -&gt; None:</span><br><span class="line">    try:</span><br><span class="line">        import uvloop  # noqa</span><br><span class="line">    except ImportError:  # pragma: no cover</span><br><span class="line">        from uvicorn.loops.asyncio import asyncio_setup as loop_setup</span><br><span class="line"></span><br><span class="line">        loop_setup(use_subprocess=use_subprocess)</span><br><span class="line">    else:  # pragma: no cover</span><br><span class="line">        from uvicorn.loops.uvloop import uvloop_setup</span><br><span class="line"></span><br><span class="line">        uvloop_setup(use_subprocess=use_subprocess)</span><br><span class="line">uvicorn/loops/uvloop.py</span><br><span class="line">import asyncio</span><br><span class="line"></span><br><span class="line">import uvloop</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def uvloop_setup(use_subprocess: bool = False) -&gt; None:</span><br><span class="line">    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())</span><br></pre></td></tr></table></figure>
+
+<p><strong>缺点</strong></p>
+<p>目前不支持 windows</p>
+<h3 id="知识点-2"><a href="#知识点-2" class="headerlink" title="知识点 2"></a><strong>知识点 2</strong></h3><p>ASGI（Asynchronous Server Gateway Interface）是一个用于网络应用的异步Python框架接口，用于处理HTTP和WebSocket请求。ASGI是同步WSGI（Web Server Gateway Interface）接口的异步继任者，它允许使用Python编写的异步框架来构建高性能的Web应用,</p>
+<p><strong>为什么使用 ASGI</strong></p>
+<p><em>Most well established Python Web frameworks started out as WSGI-based frameworks.</em></p>
+<p>大多数成熟的 Python Web 框架最初都是基于 WSGI 的框架。</p>
+<p><em>WSGI applications are a single, synchronous callable that takes a request and returns a response. This doesn’t allow for long-lived connections, like you get with long-poll HTTP or WebSocket connections, which WSGI doesn’t support well.</em></p>
+<p>WSGI 应用程序是一个单一的同步可调用对象，它接受一个请求并返回一个响应。这不允许长时间保持连接，例如你在长轮询 HTTP 或 WebSocket 连接中所获得的那种，而 WSGI 对这些并不支持得很好。</p>
+<p><em>Having an async concurrency model also allows for options such as lightweight background tasks, and can be less of a limiting factor for endpoints that have long periods being blocked on network I&#x2F;O such as dealing with slow HTTP requests.</em></p>
+<p>采用异步并发模型还可以实现轻量级的后台任务，可以更少的被那些长时间被网络I&#x2F;O（如处理缓慢的HTTP请求）阻塞的端点所限制。</p>
+<p>文档链接: <a target="_blank" rel="noopener" href="https://www.uvicorn.org/#the-asgi-interface">https://www.uvicorn.org/#the-asgi-interface</a></p>
+<p>最简单的 ASGI 应用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">async def app(scope, receive, send):</span><br><span class="line">    assert scope[&#x27;type&#x27;] == &#x27;http&#x27;</span><br><span class="line"></span><br><span class="line">    await send(&#123;</span><br><span class="line">        &#x27;type&#x27;: &#x27;http.response.start&#x27;,</span><br><span class="line">        &#x27;status&#x27;: 200,</span><br><span class="line">        &#x27;headers&#x27;: [</span><br><span class="line">            [b&#x27;content-type&#x27;, b&#x27;text/plain&#x27;],</span><br><span class="line">        ],</span><br><span class="line">    &#125;)</span><br><span class="line">    await send(&#123;</span><br><span class="line">        &#x27;type&#x27;: &#x27;http.response.body&#x27;,</span><br><span class="line">        &#x27;body&#x27;: b&#x27;Hello, world!&#x27;,</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>scope http 的内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">scope = &#123;</span><br><span class="line">    &quot;type&quot;: &quot;http&quot;,</span><br><span class="line">    &quot;http_version&quot;: &quot;1.1&quot;,</span><br><span class="line">    &quot;method&quot;: &quot;GET&quot;,</span><br><span class="line">    &quot;scheme&quot;: &quot;https&quot;,</span><br><span class="line">    &quot;path&quot;: &quot;/&quot;,</span><br><span class="line">    &quot;query_string&quot;: b&quot;search=red+blue&amp;maximum_price=20&quot;,</span><br><span class="line">    &quot;headers&quot;: [</span><br><span class="line">        (b&quot;host&quot;, b&quot;www.example.org&quot;),</span><br><span class="line">        (b&quot;accept&quot;, b&quot;application/json&quot;)</span><br><span class="line">    ],</span><br><span class="line">    &quot;client&quot;: (&quot;134.56.78.4&quot;, 1453),</span><br><span class="line">    &quot;server&quot;: (&quot;www.example.org&quot;, 443)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与 wsgi 的 environ 字典非常相似</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">environ = &#123;</span><br><span class="line">    &quot;REQUEST_METHOD&quot;: &quot;GET&quot;,</span><br><span class="line">    &quot;SCRIPT_NAME&quot;: &quot;&quot;,</span><br><span class="line">    &quot;PATH_INFO&quot;: &quot;/&quot;,</span><br><span class="line">    &quot;QUERY_STRING&quot;: &quot;search=red+blue&amp;maximum_price=20&quot;,</span><br><span class="line">    &quot;SERVER_NAME&quot;: &quot;www.example.org&quot;,</span><br><span class="line">    &quot;SERVER_PORT&quot;: 443,</span><br><span class="line">    &quot;REMOTE_HOST&quot;: &quot;134.56.78.4&quot;,</span><br><span class="line">    &quot;REMOTE_PORT&quot;: 1453,</span><br><span class="line">    &quot;SERVER_PROTOCOL&quot;: &quot;HTTP/1.1&quot;,</span><br><span class="line">    &quot;HTTP_HOST&quot;: &quot;www.example.org&quot;,</span><br><span class="line">    &quot;HTTP_ACCEPT&quot;: &quot;application/json&quot;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实际上官访文档也解释了两者之间的兼容性：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/www.html#wsgi-compatibility">https://asgi.readthedocs.io/en/latest/specs/www.html#wsgi-compatibility</a></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="image-20240919225427742.png" alt="image-20240919225427742.png"></p>
+<h2 id="源码结构"><a href="#源码结构" class="headerlink" title="源码结构"></a><strong>源码结构</strong></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">├─lifespan</span><br><span class="line">│  │  off.py</span><br><span class="line">│  │  on.py</span><br><span class="line">│  │  __init__.py</span><br><span class="line">│</span><br><span class="line">├─loops</span><br><span class="line">│  │  asyncio.py</span><br><span class="line">│  │  auto.py</span><br><span class="line">│  │  uvloop.py</span><br><span class="line">│  │  __init__.py</span><br><span class="line">│</span><br><span class="line">├─middleware</span><br><span class="line">│  │  asgi2.py</span><br><span class="line">│  │  message_logger.py</span><br><span class="line">│  │  proxy_headers.py</span><br><span class="line">│  │  wsgi.py</span><br><span class="line">│  │  __init__.py</span><br><span class="line">│</span><br><span class="line">├─protocols</span><br><span class="line">│  │  utils.py</span><br><span class="line">│  │  __init__.py</span><br><span class="line">│  │</span><br><span class="line">│  ├─http</span><br><span class="line">│  │  │  auto.py</span><br><span class="line">│  │  │  flow_control.py</span><br><span class="line">│  │  │  h11_impl.py</span><br><span class="line">│  │  │  httptools_impl.py</span><br><span class="line">│  │  │  __init__.py</span><br><span class="line">│  │</span><br><span class="line">│  ├─websockets</span><br><span class="line">│  │  │  auto.py</span><br><span class="line">│  │  │  websockets_impl.py</span><br><span class="line">│  │  │  wsproto_impl.py</span><br><span class="line">│  │  │  __init__.py</span><br><span class="line">│</span><br><span class="line">├─supervisors</span><br><span class="line">│  │  basereload.py</span><br><span class="line">│  │  multiprocess.py</span><br><span class="line">│  │  statreload.py</span><br><span class="line">│  │  watchfilesreload.py</span><br><span class="line">│  │  watchgodreload.py</span><br><span class="line">│  │  __init__.py</span><br><span class="line">│</span><br><span class="line">│  config.py</span><br><span class="line">│  importer.py</span><br><span class="line">│  logging.py</span><br><span class="line">│  main.py</span><br><span class="line">│  server.py</span><br><span class="line">│  workers.py</span><br><span class="line">│  _subprocess.py</span><br><span class="line">│  _types.py</span><br><span class="line">│  __init__.py</span><br><span class="line">│  __main__.py</span><br></pre></td></tr></table></figure>
+
+<h2 id="lifespan"><a href="#lifespan" class="headerlink" title="lifespan"></a><strong>lifespan</strong></h2><blockquote>
+<p>告诉基于 ASGI 的应用程序<code>uvicorn</code>即将启动和停止的时间， <code>uvicorn</code> 在启动的时候会初始化，然后发送初始化协议并等待ASGI应用程序返回， 如果ASGI应用程序返回 <code>complele</code> 则 <code>uvicorn</code> 会继续运行， 返回 <code>failed</code> 则报错退出</p>
+</blockquote>
+<p>我们先看 lifespan 这个目录有什么</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">class LifespanOn:</span><br><span class="line">    def __init__(self, config: Config) -&gt; None:</span><br><span class="line">        self.logger = logging.getLogger(&quot;uvicorn.error&quot;)</span><br><span class="line">        self.startup_event = asyncio.Event()</span><br><span class="line">        self.shutdown_event = asyncio.Event()</span><br><span class="line">        self.receive_queue: Queue[LifespanReceiveMessage] = asyncio.Queue()</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">    async def startup(self) -&gt; None:</span><br><span class="line">        self.logger.info(&quot;Waiting for application startup.&quot;)</span><br><span class="line"></span><br><span class="line">        # 获取事件循环</span><br><span class="line">        loop = asyncio.get_event_loop()</span><br><span class="line">        # 这里只是创建了任务，让其在事件循环中等待执行，创建变量原因是添加 hard reference, 避免被 python 自动 gc</span><br><span class="line">        main_lifespan_task = loop.create_task(self.main())  # noqa: F841</span><br><span class="line">        # Keep a hard reference to prevent garbage collection</span><br><span class="line">        # See https://github.com/encode/uvicorn/pull/972</span><br><span class="line">        startup_event: LifespanStartupEvent = &#123;&quot;type&quot;: &quot;lifespan.startup&quot;&#125;</span><br><span class="line">        # 发送启动事件到队列</span><br><span class="line">        await self.receive_queue.put(startup_event)</span><br><span class="line">        await self.startup_event.wait()</span><br><span class="line"></span><br><span class="line">        if self.startup_failed or (self.error_occured and self.config.lifespan == &quot;on&quot;):</span><br><span class="line">            self.logger.error(&quot;Application startup failed. Exiting.&quot;)</span><br><span class="line">            self.should_exit = True</span><br><span class="line">        else:</span><br><span class="line">            self.logger.info(&quot;Application startup complete.&quot;)</span><br><span class="line">            </span><br><span class="line">    async def main(self) -&gt; None:</span><br><span class="line">        try:</span><br><span class="line">            app = self.config.loaded_app</span><br><span class="line">            scope: LifespanScope = &#123;</span><br><span class="line">                &quot;type&quot;: &quot;lifespan&quot;,</span><br><span class="line">                &quot;asgi&quot;: &#123;&quot;version&quot;: self.config.asgi_version, &quot;spec_version&quot;: &quot;2.0&quot;&#125;,</span><br><span class="line">                &quot;state&quot;: self.state,</span><br><span class="line">            &#125;</span><br><span class="line">            await app(scope, self.receive, self.send)</span><br><span class="line">        except BaseException as exc:</span><br><span class="line">            ...</span><br></pre></td></tr></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="image-20240919230035590.png" alt="img"></p>
+<p><strong>asyncio.Event() 对象的使用</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">import asyncio</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">async def waiter(event):</span><br><span class="line">    print(&quot;Waiter is waiting for the event to be set.&quot;)</span><br><span class="line">    await event.wait()</span><br><span class="line">    print(&quot;Waiter has been awakened.&quot;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">async def setter(event):</span><br><span class="line">    print(&quot;Setter is going to set the event.&quot;)</span><br><span class="line">    await asyncio.sleep(1)  # 模拟一些异步操作</span><br><span class="line">    event.set()</span><br><span class="line">    print(&quot;Event has been set.&quot;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">async def main():</span><br><span class="line">    event = asyncio.Event()</span><br><span class="line">    waiter_task = asyncio.create_task(waiter(event))</span><br><span class="line">    setter_task = asyncio.create_task(setter(event))</span><br><span class="line"></span><br><span class="line">    # 等待两个任务都完成</span><br><span class="line">    await waiter_task</span><br><span class="line">    await setter_task</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br><span class="line"></span><br><span class="line"># 输出</span><br><span class="line">Waiter is waiting for the event to be set.</span><br><span class="line">Setter is going to set the event.</span><br><span class="line">Event has been set.</span><br><span class="line">Waiter has been awakened. </span><br></pre></td></tr></table></figure>
+
+<p><code>LifespanOff</code> 比较简单</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class LifespanOff:</span><br><span class="line">    def __init__(self, config: Config) -&gt; None:</span><br><span class="line">        self.should_exit = False</span><br><span class="line">        self.state: dict[str, Any] = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    async def startup(self) -&gt; None:</span><br><span class="line">        pass</span><br><span class="line"></span><br><span class="line">    async def shutdown(self) -&gt; None:</span><br><span class="line">        pass</span><br></pre></td></tr></table></figure>
+
+<h2 id="loops"><a href="#loops" class="headerlink" title="loops"></a><strong>loops</strong></h2><p>自动加载事件循环， 优先加载 <code>uvloop</code> 参考上文 <strong>知识点 1</strong></p>
+<h2 id="middleware"><a href="#middleware" class="headerlink" title="middleware"></a><strong>middleware</strong></h2><blockquote>
+<p>里面是一些简单通用的中间件</p>
+<p>PS: 这里的中间件和 fastapi 中的中间件是不同的，fastapi 的中间件是一个 ASGI 应用中上下文的切割，这里的中间件就是一个 ASGI 应用</p>
+</blockquote>
+<p><strong>wsgi.py</strong></p>
+<p>将 ASGI 服务转成 WSGI 服务</p>
+<p><strong>message_logger.py</strong></p>
+<p>传递消息的中间件</p>
+<p><strong>proxy_headers.py</strong></p>
+<p>一个应用程序通过代理（如Nginx、Apache等）与客户端连接时，客户端的请求会先经过代理服务器，然后再转发给应用程序。代理服务器在转发时，会添加一些特殊的HTTP头部，比如：</p>
+<ul>
+<li><code>X-Forwarded-For</code>：记录原始客户端的IP地址。</li>
+<li><code>X-Forwarded-Proto</code>：记录客户端使用的协议（HTTP或HTTPS）。</li>
+</ul>
+<p>然而，当应用程序收到请求时，默认情况下，它会认为请求是从代理服务器而不是从原始客户端发来的。所以，客户端的IP和协议信息可能会被代理的IP和协议覆盖。</p>
+<p>这个中间件的作用就是让应用程序使用代理服务器传递过来的这些头部信息，从而获取到原始客户端的IP地址和协议，而不是代理服务器的IP和协议。这样，应用程序可以知道真正发起请求的客户端是谁，以及他们使用的是HTTP还是HTTPS。</p>
+<h2 id="protocols"><a href="#protocols" class="headerlink" title="protocols"></a><strong>protocols</strong></h2><blockquote>
+<p>里面存放着读取连接数据和解析消息体的协议， 如 HTTP 和 WebSockets, 可以把他认为是一个序列化器。</p>
+</blockquote>
+<h3 id="基础协议"><a href="#基础协议" class="headerlink" title="基础协议"></a><strong>基础协议</strong></h3><p><code>uvicorn</code> 封装的对象继承于 <code>asyncio.Protocol</code>, 它是针对TCP协议的封装，包含以下六个方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">class BaseProtocol:</span><br><span class="line">    def connection_made(self, transport):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        在建立连接时调用.</span><br><span class="line"></span><br><span class="line">        参数是表示管道连接的transport, </span><br><span class="line">        此时得到的transport需要设置为该类的transport， 方便后续connection_lost控制关闭管道.</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    def connection_lost(self, exc):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        当连接丢失或关闭时调用, 根据exc判断是否要关闭trnasport.</span><br><span class="line">        参数是一个异常对象或None(后者表示接收到常规EOF或中止或关闭连接).</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    def pause_writing(self):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        当transport缓冲区超过高水位(high-water mark)时调用, </span><br><span class="line">        此时应该能控制外部不再写入数据（通常是一个asyncio.Future）,</span><br><span class="line">        同时应该通过transport.pause_reading来停止获取数据， 之后TCP就会通过拥塞机制使得客户端减缓发送数据的速度。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    def resume_writing(self):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        当transport缓冲区排放低于低水位线(low-water mark)时调用. </span><br><span class="line">        此时要释放标志， 使得外部可以继续写入数据， </span><br><span class="line">        同时通过transport.resume_reading来恢复获取数据， </span><br><span class="line">        之后TCP就会通过拥塞机制知道服务端的处理能力上来了， 使客户端加快发送速度。</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">class Protocol(BaseProtocol):</span><br><span class="line">    def data_received(self, data):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        通过该方法可以获取到客户端传输过来的数据</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    def eof_received(self):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        当另一端调用write_eof()或等效函数时调用.</span><br><span class="line"></span><br><span class="line">        如果返回一个假值(包括None)，则传输将关闭自身。</span><br><span class="line">        如果它返回true值，则关闭传输取决于协议.</span><br><span class="line">        &quot;&quot;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>通过这些我们还不知道 uvicorn 做了哪些修改来达到跟应用程序进行通信，所以我们接着看一下 uvicorn 的具体实现</p>
+<h3 id="http"><a href="#http" class="headerlink" title="http"></a><strong>http</strong></h3><p>里面有两种实现：httptools 和 h11_impl</p>
+<p><code>httptools</code> 是一个用 C 语言编写的高性能 HTTP 库，它提供了一个快速的 HTTP 解析器和生成器。由于它是用 C 编写的，因此可以提供比纯 Python 库更高的性能。<code>httptools</code> 通常用于构建高性能的 Web 服务器和客户端，特别是在需要处理大量并发连接时。</p>
+<p><code>h11</code> 是一个纯 Python 编写的 HTTP&#x2F;1.1 协议的实现，它提供了一个简单、明确的 API 来处理 HTTP 消息。<code>h11</code> 的设计目标是易于理解和使用，而不是追求最高性能。</p>
+<p>httptools 的内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line">class ServerState:</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    Shared servers state that is available between all protocol instances.</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    def __init__(self) -&gt; None:</span><br><span class="line">        self.total_requests = 0</span><br><span class="line">        self.connections: set[Protocols] = set()</span><br><span class="line">        self.tasks: set[asyncio.Task[None]] = set()</span><br><span class="line">        self.default_headers: list[tuple[bytes, bytes]] = []</span><br><span class="line"></span><br><span class="line">class HttpToolsProtocol(asyncio.Protocol):</span><br><span class="line">        def __init__(</span><br><span class="line">        self,</span><br><span class="line">        config: Config,</span><br><span class="line">        server_state: ServerState,</span><br><span class="line">        app_state: dict[str, Any],</span><br><span class="line">        _loop: asyncio.AbstractEventLoop | None = None,</span><br><span class="line">    ) -&gt; None:</span><br><span class="line">        if not config.loaded:</span><br><span class="line">            config.load()</span><br><span class="line"></span><br><span class="line">        self.config = config</span><br><span class="line">        self.app = config.loaded_app</span><br><span class="line">        self.loop = _loop or asyncio.get_event_loop()</span><br><span class="line">        self.logger = logging.getLogger(&quot;uvicorn.error&quot;)</span><br><span class="line">        self.access_logger = logging.getLogger(&quot;uvicorn.access&quot;)</span><br><span class="line">        # 传入了 self</span><br><span class="line">        self.parser = httptools.HttpRequestParser(self)</span><br><span class="line">		# server_state 可以理解为一个容器</span><br><span class="line">        self.server_state = server_state</span><br><span class="line">        self.connections = server_state.connections</span><br><span class="line">        self.tasks = server_state.tasks</span><br><span class="line"></span><br><span class="line">        # Per-connection state</span><br><span class="line">        self.transport: asyncio.Transport = None  # type: ignore[assignment]</span><br><span class="line">        self.flow: FlowControl = None  # type: ignore[assignment]</span><br><span class="line">        # 请求处理流程的双端队列</span><br><span class="line">        self.pipeline: deque[tuple[RequestResponseCycle, ASGI3Application]] = deque()</span><br><span class="line">    </span><br><span class="line">    def connection_made(  # type: ignore[override]</span><br><span class="line">        self, transport: asyncio.Transport</span><br><span class="line">    ) -&gt; None:</span><br><span class="line">        # 添加实例本身到集合， 代表当前还有连接在处理</span><br><span class="line">        self.connections.add(self)</span><br><span class="line"></span><br><span class="line">        self.transport = transport</span><br><span class="line">        # 初始化流控制</span><br><span class="line">        self.flow = FlowControl(transport)</span><br><span class="line">         # 简单的初始化实例trsnaport的相关编列</span><br><span class="line">        self.server = get_local_addr(transport)</span><br><span class="line">        self.client = get_remote_addr(transport)</span><br><span class="line">        self.scheme = &quot;https&quot; if is_ssl(transport) else &quot;http&quot;</span><br><span class="line"></span><br><span class="line">        if self.logger.level &lt;= TRACE_LOG_LEVEL:</span><br><span class="line">            prefix = &quot;%s:%d - &quot; % self.client if self.client else &quot;&quot;</span><br><span class="line">            self.logger.log(TRACE_LOG_LEVEL, &quot;%sHTTP connection made&quot;, prefix)</span><br><span class="line"></span><br><span class="line">    def connection_lost(self, exc: Exception | None) -&gt; None:</span><br><span class="line">        # 从集合删除实例本身， 代表当前连接已经处理玩了， 不需要进入统计容器</span><br><span class="line">        self.connections.discard(self)</span><br><span class="line"></span><br><span class="line">        if self.logger.level &lt;= TRACE_LOG_LEVEL:</span><br><span class="line">            prefix = &quot;%s:%d - &quot; % self.client if self.client else &quot;&quot;</span><br><span class="line">            self.logger.log(TRACE_LOG_LEVEL, &quot;%sHTTP connection lost&quot;, prefix)</span><br><span class="line"></span><br><span class="line">        # 设置cycle， 告诉他连接已经断开</span><br><span class="line">        if self.cycle and not self.cycle.response_complete:</span><br><span class="line">            self.cycle.disconnected = True</span><br><span class="line">        if self.cycle is not None:</span><br><span class="line">            self.cycle.message_event.set()</span><br><span class="line">        if self.flow is not None:</span><br><span class="line">            self.flow.resume_writing()</span><br><span class="line">        if exc is None:</span><br><span class="line">            self.transport.close()</span><br><span class="line">            self._unset_keepalive_if_required()</span><br><span class="line"></span><br><span class="line">        self.parser = None</span><br><span class="line"></span><br><span class="line">    def _unset_keepalive_if_required(self):</span><br><span class="line">        &quot;&quot;&quot;取消keep alive timeout的任务，</span><br><span class="line">        一般来说， 在发送数据后服务端会等待客户端发送数据， 如果超过多少秒没有发送数据则可以判断该客户端已经断开了， 服务端可以主动关闭连接</span><br><span class="line">        而uvicorn通过timeout_keep_alive_task来实现</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        if self.timeout_keep_alive_task is not None:</span><br><span class="line">            self.timeout_keep_alive_task.cancel()</span><br><span class="line">            self.timeout_keep_alive_task = None</span><br><span class="line"></span><br><span class="line">    def data_received(self, data):</span><br><span class="line">        self._unset_keepalive_if_required()</span><br><span class="line"></span><br><span class="line">        try:</span><br><span class="line">            # 接受字节数据， 并交由http解析器进行解析</span><br><span class="line">            self.parser.feed_data(data)</span><br><span class="line">        except httptools.HttpParserError as exc:</span><br><span class="line">            # 解析失败， 应该不是http协议的数据， 断开连接</span><br><span class="line">            msg = &quot;Invalid HTTP request received.&quot;</span><br><span class="line">            self.logger.warning(msg, exc_info=exc)</span><br><span class="line">            self.transport.close()</span><br><span class="line">        except httptools.HttpParserUpgrade:</span><br><span class="line">            # 已经超过了解析器能解析的协议版本， 应该交由更新的协议解析器处理</span><br><span class="line">            self.handle_upgrade()</span><br></pre></td></tr></table></figure>
+
+<p>该类中还有很多 <code>on_xxx</code> 的方法并没有被调用，是因为在初始化HTTP协议解析器的时候，<code>uvicorn.protocol</code> 把自己的实例传入了HTTP解析器中， 解析器会边接收数据边按照url, header, body来顺序解析， 并在执行每种数据解析后， 会通过回调告诉传入的实例， <code>uvicorn</code> 正是通过<code>on_xxx</code> 方法来监听这些回调并处理解析完的HTTP数据</p>
+<p>可以看 httptools 的 parser 源码，是 CPython 写的: <a target="_blank" rel="noopener" href="https://github.com/MagicStack/httptools/blob/master/httptools/parser/parser.pyx">https://github.com/MagicStack/httptools/blob/master/httptools/parser/parser.pyx</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br></pre></td><td class="code"><pre><span class="line">class HttpToolsProtocol(asyncio.Protocol):</span><br><span class="line">        def on_message_begin(self) -&gt; None:</span><br><span class="line">        # 接收到请求的第一次解析，主要作用是初始化 scope</span><br><span class="line">        self.url = b&quot;&quot;</span><br><span class="line">        self.expect_100_continue = False</span><br><span class="line">        self.headers = []</span><br><span class="line">        self.scope = &#123;  # type: ignore[typeddict-item]</span><br><span class="line">            &quot;type&quot;: &quot;http&quot;,</span><br><span class="line">            &quot;asgi&quot;: &#123;&quot;version&quot;: self.config.asgi_version, &quot;spec_version&quot;: &quot;2.4&quot;&#125;,</span><br><span class="line">            &quot;http_version&quot;: &quot;1.1&quot;,</span><br><span class="line">            &quot;server&quot;: self.server,</span><br><span class="line">            &quot;client&quot;: self.client,</span><br><span class="line">            &quot;scheme&quot;: self.scheme,  # type: ignore[typeddict-item]</span><br><span class="line">            &quot;root_path&quot;: self.root_path,</span><br><span class="line">            &quot;headers&quot;: self.headers,</span><br><span class="line">            &quot;state&quot;: self.app_state.copy(),</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    # Parser callbacks</span><br><span class="line">    def on_url(self, url: bytes) -&gt; None:</span><br><span class="line">        self.url += url</span><br><span class="line"></span><br><span class="line">    def on_header(self, name: bytes, value: bytes) -&gt; None:</span><br><span class="line">        &quot;&quot;&quot;解析器在解析header时， 是按照header一行一行进行解析的， 所以每一行header都会调用一次on_header, 并把他们存在实例的headers中&quot;&quot;&quot;</span><br><span class="line">        name = name.lower()</span><br><span class="line">        if name == b&quot;expect&quot; and value.lower() == b&quot;100-continue&quot;:</span><br><span class="line">            self.expect_100_continue = True</span><br><span class="line">        self.headers.append((name, value))</span><br><span class="line"></span><br><span class="line">    def on_headers_complete(self) -&gt; None:</span><br><span class="line">        http_version = self.parser.get_http_version()</span><br><span class="line">        method = self.parser.get_method()</span><br><span class="line">        self.scope[&quot;method&quot;] = method.decode(&quot;ascii&quot;)</span><br><span class="line">        if http_version != &quot;1.1&quot;:</span><br><span class="line">            self.scope[&quot;http_version&quot;] = http_version</span><br><span class="line">        if self.parser.should_upgrade() and self._should_upgrade():</span><br><span class="line">            # 如果发现当前http版本更加高级（比如websocket）, 则不再处理, 在另外一个逻辑会转到websocket处理</span><br><span class="line">            return</span><br><span class="line">        parsed_url = httptools.parse_url(self.url)</span><br><span class="line">        raw_path = parsed_url.path</span><br><span class="line">        path = raw_path.decode(&quot;ascii&quot;)</span><br><span class="line">        if &quot;%&quot; in path:</span><br><span class="line">            path = urllib.parse.unquote(path)</span><br><span class="line">        full_path = self.root_path + path</span><br><span class="line">        full_raw_path = self.root_path.encode(&quot;ascii&quot;) + raw_path</span><br><span class="line">        self.scope[&quot;path&quot;] = full_path</span><br><span class="line">        self.scope[&quot;raw_path&quot;] = full_raw_path</span><br><span class="line">        self.scope[&quot;query_string&quot;] = parsed_url.query or b&quot;&quot;</span><br><span class="line"></span><br><span class="line">        # Handle 503 responses when &#x27;limit_concurrency&#x27; is exceeded.</span><br><span class="line">        if self.limit_concurrency is not None and (</span><br><span class="line">            len(self.connections) &gt;= self.limit_concurrency or len(self.tasks) &gt;= self.limit_concurrency</span><br><span class="line">        ):</span><br><span class="line">            # 当前并发数过高， 不再转发给后面的应用程序， 直接返回错误, 这里是一个具有ASGI标准函数签名的函数, 里面实现的功能是发送错误信息到socket</span><br><span class="line">            app = service_unavailable</span><br><span class="line">            message = &quot;Exceeded concurrency limit.&quot;</span><br><span class="line">            self.logger.warning(message)</span><br><span class="line">        else:</span><br><span class="line">            app = self.app</span><br><span class="line"></span><br><span class="line">        # cycle 相当于一个 request 的处理流程,普通的HTTP请求只对应一个cycle就可以了，这里是兼容Pipeline HTTP请求</span><br><span class="line">        existing_cycle = self.cycle</span><br><span class="line">        self.cycle = RequestResponseCycle(</span><br><span class="line">            scope=self.scope,</span><br><span class="line">            transport=self.transport,</span><br><span class="line">            flow=self.flow,</span><br><span class="line">            logger=self.logger,</span><br><span class="line">            access_logger=self.access_logger,</span><br><span class="line">            access_log=self.access_log,</span><br><span class="line">            default_headers=self.server_state.default_headers,</span><br><span class="line">            message_event=asyncio.Event(),</span><br><span class="line">            expect_100_continue=self.expect_100_continue,</span><br><span class="line">            keep_alive=http_version != &quot;1.0&quot;,</span><br><span class="line">            on_response=self.on_response_complete,</span><br><span class="line">        )</span><br><span class="line">        if existing_cycle is None or existing_cycle.response_complete:</span><br><span class="line">            # Standard case - start processing the request.</span><br><span class="line">             # 如果上个请求已经处理完了， 则开始处理这个请求(通过run_asgi来运行)</span><br><span class="line">            task = self.loop.create_task(self.cycle.run_asgi(app))</span><br><span class="line">            task.add_done_callback(self.tasks.discard)</span><br><span class="line">            self.tasks.add(task)</span><br><span class="line">        else:</span><br><span class="line">             # 如果上个请求没有处理完(比如 body 没有接收完整)， 就先暂停读取数据， 并把该cycle放到pipeline暂存</span><br><span class="line">            # Pipelined HTTP requests need to be queued up.</span><br><span class="line">            self.flow.pause_reading()</span><br><span class="line">            self.pipeline.appendleft((self.cycle, app))</span><br><span class="line"></span><br><span class="line">    def on_body(self, body: bytes) -&gt; None:</span><br><span class="line">        # 一个请求可能会有多次 on_body 调用，包括这里再往后就没有直接解析数据了，一般会发送到真正处理的应用程序（ASGI应用）</span><br><span class="line">        if (self.parser.should_upgrade() and self._should_upgrade()) or self.cycle.response_complete:</span><br><span class="line">            return</span><br><span class="line">        # 将 body 累计到 cycle 中</span><br><span class="line">        self.cycle.body += body</span><br><span class="line">        if len(self.cycle.body) &gt; HIGH_WATER_LIMIT:</span><br><span class="line">            # 由于ASGI应用程序会根据调用者需要才来获取body(比如starlette的 await request.body())， 如果应用程序没有需要则会暂缓获取body数据</span><br><span class="line">            self.flow.pause_reading()</span><br><span class="line">        # 告诉ASGI应用程序， body已经获取结束（通常在cycle的more_body为False的时候, 才会检查message_event）</span><br><span class="line">        self.cycle.message_event.set()</span><br><span class="line"></span><br><span class="line">    def on_message_complete(self) -&gt; None:</span><br><span class="line">        if (self.parser.should_upgrade() and self._should_upgrade()) or self.cycle.response_complete:</span><br><span class="line">            return</span><br><span class="line">        # 表示body已经读取结束了 </span><br><span class="line">        self.cycle.more_body = False</span><br><span class="line">        self.cycle.message_event.set()</span><br><span class="line"></span><br><span class="line">    def on_response_complete(self) -&gt; None:</span><br><span class="line">        # Callback for pipelined HTTP requests to be started.</span><br><span class="line">        self.server_state.total_requests += 1</span><br><span class="line"></span><br><span class="line">        if self.transport.is_closing():</span><br><span class="line">            return</span><br><span class="line">        </span><br><span class="line">        # 设置一个keep_alive的机制， 服务端返回响应后会设置一个倒计时future, 该future只有在上面data_received收到请求的时候才会取消</span><br><span class="line">        # 如果该future没有取消， 则会调用timeout_keep_alive_handler函数来关闭transport通道</span><br><span class="line">        self._unset_keepalive_if_required()</span><br><span class="line"></span><br><span class="line">        # Unpause data reads if needed.</span><br><span class="line">        self.flow.resume_reading()</span><br><span class="line"></span><br><span class="line">        # Unblock any pipelined events. If there are none, arm the</span><br><span class="line">        # Keep-Alive timeout instead.</span><br><span class="line">        if self.pipeline:</span><br><span class="line">            # 如果是pipeline请求， 则开始处理刚才暂存的cycle</span><br><span class="line">            cycle, app = self.pipeline.pop()</span><br><span class="line">            task = self.loop.create_task(cycle.run_asgi(app))</span><br><span class="line">            task.add_done_callback(self.tasks.discard)</span><br><span class="line">            self.tasks.add(task)</span><br><span class="line">        else:</span><br><span class="line">            self.timeout_keep_alive_task = self.loop.call_later(</span><br><span class="line">                self.timeout_keep_alive, self.timeout_keep_alive_handler</span><br><span class="line">            )</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>PS: 什么是 pipeline 请求</p>
+<p>在ASGI的上下文中，一个请求可能不会立即完成，而是会通过多个事件来分阶段处理。例如，一个HTTP请求可能首先接收到请求头，然后是请求体的一部分，然后是更多的请求体，直到所有的请求体都被接收。这个过程可以被看作是一个”pipeline”，其中请求数据在被完全接收和处理之前，会通过不同的阶段流动。</p>
+</blockquote>
+<p>可以看到里面有一个 cycle 对象，是负责 http 和 asgi 数据转换的对象，它有 <code>send</code> 和 <code>receive</code> 两个方法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">  async def send(self, message: ASGISendEvent) -&gt; None:</span><br><span class="line">      # 通过传入的参数message获取到ASGI应用程序返回的数据， 并依据ASGI协议进行解析， </span><br><span class="line"># 并拼接成HTTP协议的字节流， 当ASGI应用程序发送结束标记时， send会把拼接的字节 </span><br><span class="line">      # 流通过socket返回给客户端, 同时触发on_response_complete 方法。</span><br><span class="line">      ...</span><br><span class="line"></span><br><span class="line">  async def receive(self) -&gt; ASGIReceiveEvent:</span><br><span class="line">      # 它只负责接收获取到已经解析完成的HTTP数据（前面on_xxx时会把数据传给cycle），  </span><br><span class="line"># 然后发送到 ASGI 应用程序中</span><br><span class="line">      if self.waiting_for_100_continue and not self.transport.is_closing():</span><br><span class="line">          self.transport.write(b&quot;HTTP/1.1 100 Continue\r\n\r\n&quot;)</span><br><span class="line">          self.waiting_for_100_continue = False</span><br><span class="line"></span><br><span class="line">      if not self.disconnected and not self.response_complete:</span><br><span class="line">          self.flow.resume_reading()</span><br><span class="line">          await self.message_event.wait()</span><br><span class="line">          self.message_event.clear()</span><br><span class="line"></span><br><span class="line">      if self.disconnected or self.response_complete:</span><br><span class="line">          return &#123;&quot;type&quot;: &quot;http.disconnect&quot;&#125;</span><br><span class="line">      message: HTTPRequestEvent = &#123;&quot;type&quot;: &quot;http.request&quot;, &quot;body&quot;: self.body, &quot;more_body&quot;: self.more_body&#125;</span><br><span class="line">      self.body = b&quot;&quot;</span><br><span class="line">      return message</span><br></pre></td></tr></table></figure>
+
+<h3 id="websocket"><a href="#websocket" class="headerlink" title="websocket"></a><strong>websocket</strong></h3><p>里面也有两种实现：websockets 和 wsproto</p>
+<p><code>websockets</code> 是一个独立的 Python 库，用于构建 WebSocket 服务器和客户端。它提供了一个高级的 API，允许开发者轻松地实现 WebSocket 通信。<code>websockets</code> 库处理了 WebSocket 协议的大部分复杂性，包括握手、帧编码和解码、心跳以及关闭过程。</p>
+<p><code>wsproto</code> 是一个较低级别的 WebSocket 协议库，它提供了 WebSocket 协议的实现，但不包括高级的框架或服务器逻辑。<code>wsproto</code> 主要用于那些需要精细控制 WebSocket 协议细节的场合，或者在性能要求极高的环境中。</p>
+<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a><strong>流程图</strong></h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="image-20240920015736527.png" alt="img"></p>
+<p>可以看到</p>
+<ol>
+<li>http 解析器中只解析到 header，具体的 body 内容是交给 ASGI 应用去处理</li>
+</ol>
+<h2 id="supervisors"><a href="#supervisors" class="headerlink" title="supervisors"></a><strong>supervisors</strong></h2><p><code>uvicorn</code>本身是以一个进程启动的， 这个文件夹存放着<code>uvicorn</code>的几种启动方式， 如多进程启动，监控文件变动自动重启的方式等</p>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a><strong>启动</strong></h2><h3 id="work-py"><a href="#work-py" class="headerlink" title="work.py"></a><strong>work.py</strong></h3><p>里面有个类 <code>UvicornWorker</code> 用于<code>gunicorn</code>启动 <code>uvicorn</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80</span><br></pre></td></tr></table></figure>
+
+<h3 id="logging-py"><a href="#logging-py" class="headerlink" title="logging.py"></a><strong>logging.py</strong></h3><p>里面定义了一些 <code>formatter</code> 比如根据日志等级渲染不同颜色等</p>
+<p>整个项目用到了三个 logger：</p>
+<ul>
+<li><code>uvicorn.error</code> 错误日志或生命周期日志</li>
+<li><code>uvicorn.access</code> http 请求访问日志</li>
+<li><code>uvicorn.asgi</code> ASGI 应用相关的日志</li>
+</ul>
+<p>日志的定义使用了 <code>dictConfig</code>，之前倒是没用过这种方式配置日志, 感觉不是很方便</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">class Config:</span><br><span class="line">    def configure_logging(self) -&gt; None:</span><br><span class="line">        logging.addLevelName(TRACE_LOG_LEVEL, &quot;TRACE&quot;)</span><br><span class="line"></span><br><span class="line">        if self.log_config is not None:</span><br><span class="line">            if isinstance(self.log_config, dict):</span><br><span class="line">                if self.use_colors in (True, False):</span><br><span class="line">                    self.log_config[&quot;formatters&quot;][&quot;default&quot;][&quot;use_colors&quot;] = self.use_colors</span><br><span class="line">                    self.log_config[&quot;formatters&quot;][&quot;access&quot;][&quot;use_colors&quot;] = self.use_colors</span><br><span class="line">                logging.config.dictConfig(self.log_config)</span><br><span class="line">            elif self.log_config.endswith(&quot;.json&quot;):</span><br><span class="line">                with open(self.log_config) as file:</span><br><span class="line">                    loaded_config = json.load(file)</span><br><span class="line">                    logging.config.dictConfig(loaded_config)</span><br><span class="line">            elif self.log_config.endswith((&quot;.yaml&quot;, &quot;.yml&quot;)):</span><br><span class="line">                # Install the PyYAML package or the uvicorn[standard] optional</span><br><span class="line">                # dependencies to enable this functionality.</span><br><span class="line">                import yaml</span><br><span class="line"></span><br><span class="line">                with open(self.log_config) as file:</span><br><span class="line">                    loaded_config = yaml.safe_load(file)</span><br><span class="line">                    logging.config.dictConfig(loaded_config)</span><br><span class="line">            else:</span><br><span class="line">                # See the note about fileConfig() here:</span><br><span class="line">                # https://docs.python.org/3/library/logging.config.html#configuration-file-format</span><br><span class="line">                logging.config.fileConfig(self.log_config, disable_existing_loggers=False)</span><br></pre></td></tr></table></figure>
+
+<h3 id="main-py"><a href="#main-py" class="headerlink" title="main.py"></a><strong>main.py</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">def run(app, **kwargs) -&gt; None:</span><br><span class="line">    if app_dir is not None:</span><br><span class="line">        sys.path.insert(0, app_dir)</span><br><span class="line"></span><br><span class="line">    # 初始化配置</span><br><span class="line">    config = Config(app, **kwargs)</span><br><span class="line">    # 初始化服务</span><br><span class="line">    server = Server(config=config)</span><br><span class="line"></span><br><span class="line">    if (config.reload or config.workers &gt; 1) and not isinstance(app, str):</span><br><span class="line">        logger = logging.getLogger(&quot;uvicorn.error&quot;)</span><br><span class="line">        logger.warning(&quot;You must pass the application as an import string to enable &#x27;reload&#x27; or &quot; &quot;&#x27;workers&#x27;.&quot;)</span><br><span class="line">        sys.exit(1)</span><br><span class="line"></span><br><span class="line">    if config.should_reload:</span><br><span class="line">        sock = config.bind_socket()</span><br><span class="line">        ChangeReload(config, target=server.run, sockets=[sock]).run()</span><br><span class="line">    elif config.workers &gt; 1:</span><br><span class="line">        sock = config.bind_socket()</span><br><span class="line">        Multiprocess(config, target=server.run, sockets=[sock]).run()</span><br><span class="line">    else:</span><br><span class="line">        server.run()</span><br><span class="line">    if config.uds and os.path.exists(config.uds):</span><br><span class="line">        os.remove(config.uds)  # pragma: py-win32</span><br><span class="line"></span><br><span class="line">    if not server.started and not config.should_reload and config.workers == 1:</span><br><span class="line">        sys.exit(STARTUP_FAILURE)</span><br></pre></td></tr></table></figure>
+
+<h3 id="server-py"><a href="#server-py" class="headerlink" title="server.py"></a><strong>server.py</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">class Server:</span><br><span class="line">    def run(self, sockets: list[socket.socket] | None = None) -&gt; None:</span><br><span class="line">        # 设置循环策略</span><br><span class="line">        self.config.setup_event_loop()</span><br><span class="line">        # 启动服务</span><br><span class="line">        return asyncio.run(self.serve(sockets=sockets))</span><br><span class="line">    </span><br><span class="line">    async def serve(self, sockets: list[socket.socket] | None = None) -&gt; None:</span><br><span class="line">        with self.capture_signals():</span><br><span class="line">            await self._serve(sockets)</span><br><span class="line"></span><br><span class="line">    async def _serve(self, sockets: list[socket.socket] | None = None) -&gt; None:</span><br><span class="line">        process_id = os.getpid()</span><br><span class="line"></span><br><span class="line">        config = self.config</span><br><span class="line">        if not config.loaded:</span><br><span class="line">            config.load()</span><br><span class="line"></span><br><span class="line">        self.lifespan = config.lifespan_class(config)</span><br><span class="line"></span><br><span class="line">        message = &quot;Started server process [%d]&quot;</span><br><span class="line">        color_message = &quot;Started server process [&quot; + click.style(&quot;%d&quot;, fg=&quot;cyan&quot;) + &quot;]&quot;</span><br><span class="line">        logger.info(message, process_id, extra=&#123;&quot;color_message&quot;: color_message&#125;)</span><br><span class="line"></span><br><span class="line">        </span><br><span class="line">        await self.startup(sockets=sockets)</span><br><span class="line">        if self.should_exit:</span><br><span class="line">            return</span><br><span class="line">        await self.main_loop()</span><br><span class="line">        await self.shutdown(sockets=sockets)</span><br><span class="line"></span><br><span class="line">        message = &quot;Finished server process [%d]&quot;</span><br><span class="line">        color_message = &quot;Finished server process [&quot; + click.style(&quot;%d&quot;, fg=&quot;cyan&quot;) + &quot;]&quot;</span><br><span class="line">        logger.info(message, process_id, extra=&#123;&quot;color_message&quot;: color_message&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>我们看看 <code>startup()</code> ，<code>main_loop()</code> 和 <code>shutdown()</code>里面有什么</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">async def startup(self, sockets: list[socket.socket] | None = None) -&gt; None:</span><br><span class="line">    await self.lifespan.startup()</span><br><span class="line">    if self.lifespan.should_exit:</span><br><span class="line">        self.should_exit = True</span><br><span class="line">        return</span><br><span class="line"></span><br><span class="line">    config = self.config</span><br><span class="line"></span><br><span class="line">    def create_protocol(</span><br><span class="line">        _loop: asyncio.AbstractEventLoop | None = None,</span><br><span class="line">    ) -&gt; asyncio.Protocol:</span><br><span class="line">        return config.http_protocol_class(  # type: ignore[call-arg]</span><br><span class="line">            config=config,</span><br><span class="line">            server_state=self.server_state,</span><br><span class="line">            app_state=self.lifespan.state,</span><br><span class="line">            _loop=_loop,</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    loop = asyncio.get_running_loop()</span><br><span class="line">    listeners: Sequence[socket.SocketType]</span><br><span class="line">    if sockets is not None:  # pragma: full coverage</span><br><span class="line">        # 当用户传socket过来的时候： 基于该scoket和create_protocol创建服务， </span><br><span class="line">        # 如果是多进程且是Windows系统， 则要显示的共享socket。</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">    elif config.fd is not None:  # pragma: py-win32</span><br><span class="line">        # 当用户传文件描述符的时候： 基于该文件描述符获取scoket， 并通过该socket</span><br><span class="line">        # 和create_protocol创建服务。</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">    elif config.uds is not None:  # pragma: py-win32</span><br><span class="line">        # 当用户传unix domain socket的时候: 基于unix domain socket和</span><br><span class="line">        # create_protocol创建服务。</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">    else:</span><br><span class="line">        # 当用户传host和port参数的时候: 基于host和port和create_protocol创建服务。</span><br><span class="line">        try:</span><br><span class="line">            server = await loop.create_server(</span><br><span class="line">                create_protocol,</span><br><span class="line">                host=config.host,</span><br><span class="line">                port=config.port,</span><br><span class="line">                ssl=config.ssl,</span><br><span class="line">                backlog=config.backlog,</span><br><span class="line">            )</span><br><span class="line">        except OSError as exc:</span><br><span class="line">            logger.error(exc)</span><br><span class="line">            await self.lifespan.shutdown()</span><br><span class="line">            sys.exit(1)</span><br><span class="line"></span><br><span class="line">        assert server.sockets is not None</span><br><span class="line">        listeners = server.sockets</span><br><span class="line">        self.servers = [server]</span><br><span class="line"></span><br><span class="line">    if sockets is None:</span><br><span class="line">        self._log_started_message(listeners)</span><br><span class="line">    else:</span><br><span class="line">        # We&#x27;re most likely running multiple workers, so a message has already been</span><br><span class="line">        # logged by `config.bind_socket()`.</span><br><span class="line">        pass  # pragma: full coverage</span><br><span class="line"></span><br><span class="line">    self.started = True</span><br></pre></td></tr></table></figure>
+
+<p>每次循环执行的时候都会调用<code>on_tick</code>方法， 该方法主要是进行服务统计以及判断啥时候可以退出服务, 比如请求总数超过配置的限制数， 或者收到信号，把变量<code>should_exit</code>设置为<code>True</code>等等</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">async def main_loop(self) -&gt; None:</span><br><span class="line">    counter = 0</span><br><span class="line">    should_exit = await self.on_tick(counter)</span><br><span class="line">    # 是个死循环，防止主程序退出</span><br><span class="line">    while not should_exit:</span><br><span class="line">        counter += 1</span><br><span class="line">        counter = counter % 864000</span><br><span class="line">        await asyncio.sleep(0.1)</span><br><span class="line">        should_exit = await self.on_tick(counter)</span><br></pre></td></tr></table></figure>
+
+<p>如果在循环中判断程序需要进行退出, 就会进入退出逻辑<code>shutdown</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">async def shutdown(self, sockets=None):</span><br><span class="line">    logger.info(&quot;Shutting down&quot;)</span><br><span class="line"></span><br><span class="line">    # 关闭socket， 不让有新的连接建立</span><br><span class="line">    for server in self.servers:</span><br><span class="line">        server.close()</span><br><span class="line">    for sock in sockets or []:</span><br><span class="line">        sock.close()</span><br><span class="line">    for server in self.servers:</span><br><span class="line">        await server.wait_closed()</span><br><span class="line"></span><br><span class="line">    # 关闭已经创建的连接， 并等待他们处理完毕 </span><br><span class="line">    for connection in list(self.server_state.connections):</span><br><span class="line">        connection.shutdown()</span><br><span class="line">    await asyncio.sleep(0.1)</span><br><span class="line"></span><br><span class="line">    # 等待连接关闭或者用户强制关闭</span><br><span class="line">    if self.server_state.connections and not self.force_exit:</span><br><span class="line">        msg = &quot;Waiting for connections to close. (CTRL+C to force quit)&quot;</span><br><span class="line">        logger.info(msg)</span><br><span class="line">        while self.server_state.connections and not self.force_exit:</span><br><span class="line">            await asyncio.sleep(0.1)</span><br><span class="line"></span><br><span class="line">    # 等待后台任务完成或者用户强制关闭</span><br><span class="line">    if self.server_state.tasks and not self.force_exit:</span><br><span class="line">        msg = &quot;Waiting for background tasks to complete. (CTRL+C to force quit)&quot;</span><br><span class="line">        logger.info(msg)</span><br><span class="line">        while self.server_state.tasks and not self.force_exit:</span><br><span class="line">            await asyncio.sleep(0.1)</span><br><span class="line"></span><br><span class="line">    # 通过lifespan告诉ASGI应用程序即将关闭</span><br><span class="line">    if not self.force_exit:</span><br><span class="line">        await self.lifespan.shutdown()</span><br></pre></td></tr></table></figure>
+
+<p><strong>启动流程图</strong></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="image-20241007172635967.png" alt="image-20241007172635967"></p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/05/22/Python%20celery%20%E9%9B%86%E6%88%90/">Python celery 集成</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">xinmos</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%AE%B0"><span class="toc-text">前记</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%A5%E8%AF%86%E7%82%B9-1"><span class="toc-text">知识点 1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%A5%E8%AF%86%E7%82%B9-2"><span class="toc-text">知识点 2</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84"><span class="toc-text">源码结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#lifespan"><span class="toc-text">lifespan</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#loops"><span class="toc-text">loops</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#middleware"><span class="toc-text">middleware</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#protocols"><span class="toc-text">protocols</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E5%8D%8F%E8%AE%AE"><span class="toc-text">基础协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#http"><span class="toc-text">http</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#websocket"><span class="toc-text">websocket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">流程图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#supervisors"><span class="toc-text">supervisors</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8"><span class="toc-text">启动</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#work-py"><span class="toc-text">work.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#logging-py"><span class="toc-text">logging.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#main-py"><span class="toc-text">main.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-py"><span class="toc-text">server.py</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"codeblock":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
