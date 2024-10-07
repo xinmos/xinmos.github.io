@@ -17,25 +17,25 @@
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
   <meta name="theme-color" content="#f9fafb">
   
-  <title>xinmos</title>
+  <title>Python celery 集成 - xinmos</title>
 
   
-    <meta name="description" content="1234title: Python celery 集成date: 2023&#x2F;5&#x2F;22 20:46:25tags: - python   celery&#x3D;&#x3D;5.2.7, redis&#x3D;&#x3D;4.5.5  目录结构 123456789101112flask_demo:	-- api:		-- celery			-- celery.py		-- file			-- fil">
+    <meta name="description" content="celery&#x3D;&#x3D;5.2.7, redis&#x3D;&#x3D;4.5.5  目录结构 123456789101112flask_demo:	-- api:		-- celery			-- celery.py		-- file			-- file.py		-- __init__.py	-- utils		-- log.py		-- restful.py	-- manage.p">
 <meta property="og:type" content="article">
-<meta property="og:title" content="xinmos">
-<meta property="og:url" content="http://xinmos.github.io/2024/10/07/Python%20celery%20%E9%9B%86%E6%88%90/index.html">
+<meta property="og:title" content="Python celery 集成">
+<meta property="og:url" content="http://xinmos.github.io/2023/05/22/Python%20celery%20%E9%9B%86%E6%88%90/index.html">
 <meta property="og:site_name" content="xinmos">
-<meta property="og:description" content="1234title: Python celery 集成date: 2023&#x2F;5&#x2F;22 20:46:25tags: - python   celery&#x3D;&#x3D;5.2.7, redis&#x3D;&#x3D;4.5.5  目录结构 123456789101112flask_demo:	-- api:		-- celery			-- celery.py		-- file			-- fil">
+<meta property="og:description" content="celery&#x3D;&#x3D;5.2.7, redis&#x3D;&#x3D;4.5.5  目录结构 123456789101112flask_demo:	-- api:		-- celery			-- celery.py		-- file			-- file.py		-- __init__.py	-- utils		-- log.py		-- restful.py	-- manage.p">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-10-07T07:17:44.582Z">
-<meta property="article:modified_time" content="2024-10-07T08:29:30.111Z">
+<meta property="article:published_time" content="2023-05-22T12:46:25.000Z">
+<meta property="article:modified_time" content="2024-10-07T08:47:10.841Z">
 <meta property="article:author" content="xinmos">
-<meta property="article:tag" content="python, java, docker, git">
+<meta property="article:tag" content="python">
 <meta name="twitter:card" content="summary">
   
   
   
-  <meta name="keywords" content="python, java, docker, git">
+  <meta name="keywords" content="python">
 
   <!-- feed -->
   
@@ -64,7 +64,7 @@
 <div class="widgets">
 
 
-<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2023/05/19/Python-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="title">Python 文件上传</span></a><a class="item title" href="/2013/06/25/Python%20ORM%20%E9%9B%86%E6%88%90/"><span class="title">Python ORM 集成</span></a><a class="item title" href="/2023/05/19/Python-%E8%A3%85%E9%A5%B0%E5%99%A8/"><span class="title">Python 装饰器</span></a><a class="item title" href="/2023/05/19/Python-Asyncio/"><span class="title">Python Asyncio</span></a><a class="item title" href="/2023/05/22/Python%20flask%20%E6%A1%86%E6%9E%B6/"><span class="title">Python flask 框架</span></a><a class="item title" href="/2023/05/22/Python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/"><span class="title">Python日志json格式</span></a></div></widget>
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2023/05/22/Python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/"><span class="title">Python日志json格式</span></a><a class="item title" href="/2023/05/19/Python-Asyncio/"><span class="title">Python Asyncio</span></a><a class="item title" href="/2023/05/19/Python-%E8%A3%85%E9%A5%B0%E5%99%A8/"><span class="title">Python 装饰器</span></a><a class="item title" href="/2023/05/19/Python-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="title">Python 文件上传</span></a><a class="item title" href="/2013/06/25/Python%20ORM%20%E9%9B%86%E6%88%90/"><span class="title">Python ORM 集成</span></a><a class="item title" href="/2023/05/22/Python%20flask%20%E6%A1%86%E6%9E%B6/"><span class="title">Python flask 框架</span></a><a class="item title" href="/2023/05/22/Python%20celery%20%E9%9B%86%E6%88%90/"><span class="title">Python celery 集成</span></a></div></widget>
 </div>
 <footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/xinmos" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/social/icons8-github-48.png"/></a></div></footer>
 </div></aside><div class="l_main" id="main">
@@ -77,12 +77,18 @@
   <div class="content">
     <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
 <span class="sep"></span><a class="cap breadcrumb" href="/">文章</a></div>
-<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2024-10-07T07:17:44.582Z">2024-10-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-10-07T08:29:30.111Z">2024-10-07</time></span></div></div></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-05-22T12:46:25.000Z">2023-05-22</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-10-07T08:47:10.841Z">2024-10-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Python celery 集成</span></h1>
+        
+      </div>
+    </div>
     
   </div>
-  </div><article class="md-text content"><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">title: Python celery 集成</span><br><span class="line">date: 2023/5/22 20:46:25</span><br><span class="line">tags: </span><br><span class="line">- python</span><br></pre></td></tr></table></figure>
-
-<blockquote>
+  </div><article class="md-text content"><blockquote>
 <p>celery&#x3D;&#x3D;5.2.7, redis&#x3D;&#x3D;4.5.5</p>
 </blockquote>
 <p>目录结构</p>
@@ -112,7 +118,7 @@
     </section>
     </div>
 </article>
-<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/05/22/Python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/">Python日志json格式</a></div></section></div>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/05/22/Python%20flask%20%E6%A1%86%E6%9E%B6/">Python flask 框架</a></div></section></div>
 
 
 
