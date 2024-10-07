@@ -1,0 +1,694 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Python Asyncio - xinmos</title>
+
+  
+    <meta name="description" content="协程 一个抽象概念，在计算机中不存在  协程（Coroutione），也可以被称为微线程，是一种用户态内的上下文切换技术。 实现方法  yield 关键字 asyncio 装饰器（在 py 3.4 之后建议用 第三种方法） async、await 关键字  yield 关键字12345678910111213# 通过 yield 切换上下文def func1():    yield 1    yi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python Asyncio">
+<meta property="og:url" content="http://xinmos.github.io/2023/05/19/Python-Asyncio/index.html">
+<meta property="og:site_name" content="xinmos">
+<meta property="og:description" content="协程 一个抽象概念，在计算机中不存在  协程（Coroutione），也可以被称为微线程，是一种用户态内的上下文切换技术。 实现方法  yield 关键字 asyncio 装饰器（在 py 3.4 之后建议用 第三种方法） async、await 关键字  yield 关键字12345678910111213# 通过 yield 切换上下文def func1():    yield 1    yi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-05-19T12:30:00.000Z">
+<meta property="article:modified_time" content="2024-10-07T07:26:41.685Z">
+<meta property="article:author" content="xinmos">
+<meta property="article:tag" content="python, java, docker, git">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="python, java, docker, git">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+
+  
+
+  
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/head.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">xinmos</div><div class="sub cap">牧阳的星</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="文档" href="/wiki/" style="color:#3DC550"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M14.25 4.48v3.057c0 .111 0 .27.02.406a.936.936 0 0 0 .445.683a.96.96 0 0 0 .783.072c.13-.04.272-.108.378-.159L17 8.005l1.124.534c.106.05.248.119.378.16a.958.958 0 0 0 .783-.073a.936.936 0 0 0 .444-.683c.021-.136.021-.295.021-.406V3.031c.113-.005.224-.01.332-.013C21.154 2.98 22 3.86 22 4.933v11.21c0 1.112-.906 2.01-2.015 2.08c-.97.06-2.108.179-2.985.41c-1.082.286-1.99 1.068-3.373 1.436c-.626.167-1.324.257-1.627.323V5.174c.32-.079 1.382-.203 1.674-.371c.184-.107.377-.216.576-.323m5.478 8.338a.75.75 0 0 1-.546.91l-4 1a.75.75 0 0 1-.364-1.456l4-1a.75.75 0 0 1 .91.546" clip-rule="evenodd"/><path fill="currentColor" d="M18.25 3.151c-.62.073-1.23.18-1.75.336a8.2 8.2 0 0 0-.75.27v3.182l.75-.356l.008-.005a1.13 1.13 0 0 1 .492-.13c.047 0 .094.004.138.01c.175.029.315.1.354.12l.009.005l.749.356V3.647z"/><path fill="currentColor" d="M12 5.214c-.334-.064-1.057-.161-1.718-.339C8.938 4.515 8.05 3.765 7 3.487c-.887-.234-2.041-.352-3.018-.412C2.886 3.007 2 3.9 2 4.998v11.146c0 1.11.906 2.01 2.015 2.079c.97.06 2.108.179 2.985.41c.486.129 1.216.431 1.873.726c1.005.451 2.052.797 3.127 1.034z" opacity=".5"/><path fill="currentColor" d="M4.273 12.818a.75.75 0 0 1 .91-.545l4 1a.75.75 0 1 1-.365 1.455l-4-1a.75.75 0 0 1-.545-.91m.909-4.545a.75.75 0 1 0-.364 1.455l4 1a.75.75 0 0 0 .364-1.455z"/></svg></a><a class="nav-item" title="探索" href="/explore/" style="color:#FA6400"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 12a8 8 0 1 1-16 0a8 8 0 0 1 16 0" opacity=".5"/><path fill="currentColor" d="M17.712 5.453c1.047-.193 2.006-.259 2.797-.152c.77.103 1.536.393 1.956 1.064c.446.714.312 1.542-.012 2.258c-.33.728-.918 1.499-1.672 2.268c-1.516 1.547-3.836 3.226-6.597 4.697c-2.763 1.472-5.495 2.484-7.694 2.92c-1.095.217-2.098.299-2.923.201c-.8-.095-1.6-.383-2.032-1.075c-.47-.752-.296-1.63.07-2.379c.375-.768 1.032-1.586 1.872-2.403L4 12.416c0 .219.083.71.168 1.146c.045.23.09.444.123.596c-.652.666-1.098 1.263-1.339 1.756c-.277.567-.208.825-.145.925c.072.116.305.305.937.38c.609.073 1.44.018 2.455-.183c2.02-.4 4.613-1.351 7.28-2.772c2.667-1.42 4.85-3.015 6.23-4.423c.694-.707 1.15-1.334 1.377-1.836c.233-.515.167-.75.107-.844c-.07-.112-.289-.294-.883-.374c-.542-.072-1.272-.041-2.163.112L16.87 5.656c.338-.101.658-.17.842-.203"/></svg></a></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2013/06/25/Python%20ORM%20%E9%9B%86%E6%88%90/"><span class="title">Python ORM 集成</span></a><a class="item title" href="/2023/05/19/Python-%E8%A3%85%E9%A5%B0%E5%99%A8/"><span class="title">Python 装饰器</span></a><a class="item title" href="/2023/05/19/Python-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="title">Python 文件上传</span></a><a class="item title" href="/2023/05/19/Python-Asyncio/"><span class="title">Python Asyncio</span></a><a class="item title" href="/2023/05/22/Python%20flask%20%E6%A1%86%E6%9E%B6/"><span class="title">Python flask 框架</span></a><a class="item title" href="/2023/05/22/Python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/"><span class="title">Python日志json格式</span></a></div></widget>
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" href="https://github.com/xinmos" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/social/icons8-github-48.png"/></a></div></footer>
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-05-19T12:30:00.000Z">2023-05-19</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2024-10-07T07:26:41.685Z">2024-10-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Python Asyncio</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h2 id="协程"><a href="#协程" class="headerlink" title="协程"></a>协程</h2><blockquote>
+<p>一个抽象概念，在计算机中不存在</p>
+</blockquote>
+<p>协程（Coroutione），也可以被称为微线程，是一种用户态内的上下文切换技术。</p>
+<p>实现方法</p>
+<ul>
+<li>yield 关键字</li>
+<li>asyncio 装饰器（在 py 3.4 之后建议用 第三种方法）</li>
+<li>async、await 关键字</li>
+</ul>
+<h3 id="yield-关键字"><a href="#yield-关键字" class="headerlink" title="yield 关键字"></a>yield 关键字</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通过 yield 切换上下文</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func1</span>():</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">from</span> func2()</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func2</span>():</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">3</span></span><br><span class="line">    <span class="keyword">yield</span> <span class="number">4</span></span><br><span class="line"></span><br><span class="line">f1 = func1()</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> f1:</span><br><span class="line">    <span class="built_in">print</span>(item)</span><br></pre></td></tr></table></figure>
+
+<h3 id="asyncio"><a href="#asyncio" class="headerlink" title="asyncio"></a>asyncio</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func1</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)  <span class="comment"># 遇到 IO 耗时操作，自动切换到 tasks 中的其他任务</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func2</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">3</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">tasks = [asyncio.ensure_future(func1()), asyncio.ensure_future(func2())]</span><br><span class="line">loop.run_until_complete(asyncio.wait(tasks))</span><br><span class="line"></span><br><span class="line"><span class="comment"># py 3.7 以后</span></span><br><span class="line">asyncio.run(tasks)</span><br></pre></td></tr></table></figure>
+
+<h2 id="异步编程"><a href="#异步编程" class="headerlink" title="异步编程"></a>异步编程</h2><h3 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h3><p>理解为一个死循环，去检测并执行某些代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 伪代码</span></span><br><span class="line"></span><br><span class="line">task_list = [task1, task2,...]</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    可执行的任务列表，已完成的任务列表</span><br><span class="line">    <span class="keyword">for</span> 就绪任务 <span class="keyword">in</span> 可执行任务列表</span><br><span class="line">    	执行</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> 已完成任务 <span class="keyword">in</span> 已完成任务列表</span><br><span class="line">    	移除</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> 可执行任务为 <span class="number">0</span>：</span><br><span class="line">    	<span class="keyword">break</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="协程函数"><a href="#协程函数" class="headerlink" title="协程函数"></a>协程函数</h3><blockquote>
+<p>用 async def func() 定义的函数</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">result = func()</span><br><span class="line"><span class="comment"># 协程函数只创建协程对象，函数内部代码不会执行</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="await"><a href="#await" class="headerlink" title="await"></a>await</h3><blockquote>
+<p>await + 可等待对象 （协程对象、Future、IO等待）</p>
+</blockquote>
+<p>等待后面的对象执行完成后在执行下一步任务（单线程内和顺序执行差不多）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func1</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)  <span class="comment"># 遇到 IO 耗时操作，自动切换到 tasks 中的其他任务</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func2</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">3</span>)</span><br><span class="line">    <span class="keyword">await</span> func1()</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">asyncio.run(func2())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出 3，1，2，4</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Task-对象"><a href="#Task-对象" class="headerlink" title="Task 对象"></a>Task 对象</h3><blockquote>
+<p>在事件循环中添加多个任务</p>
+</blockquote>
+<p>Tasks 用于并发调度协程，通过 asyncio.create_task() 的方式创建 Task 对象，这样可以让协程加入时间循环中等待被调度执行。除了使用 asyncio.create_task() 函数以外，还可同底层级别的 loop.create_task() 或 asyncio.ensure_future() 函数。不建议手动实例化 Task 对象</p>
+<p>注意：asyncio.create_task() 在 python3.7 之后才被加入，该版本之前用 asyncio.ensure_future()</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;the Return&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;main start&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 创建 task 对象，将 func 添加到事件循环</span></span><br><span class="line">    task1 = asyncio.create_task(func())</span><br><span class="line"></span><br><span class="line">    task2 = asyncio.create_task(func())</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;main end&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 当某协程遇到 阻塞（I/O、sleep）会自动切换到其他任务</span></span><br><span class="line">    ret1 = <span class="keyword">await</span> task1</span><br><span class="line">    ret2 = <span class="keyword">await</span> task2</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(ret1, ret2)</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<p>用的少，下面的比较常用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;the Return&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;main start&quot;</span>)</span><br><span class="line"></span><br><span class="line">    task_list = [</span><br><span class="line">        asyncio.create_task(func()),</span><br><span class="line">        asyncio.create_task(func())</span><br><span class="line">    ]</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;main end&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># done 为执行完之后的结果，pending 为未执行完的结果</span></span><br><span class="line">    done, pending = <span class="keyword">await</span> asyncio.wait(task_list)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(done, pending)</span><br><span class="line"></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<p>第三种</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;the Return&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">task_list = [</span><br><span class="line">    func(),</span><br><span class="line">    func()</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">done, pending = asyncio.run(asyncio.wait(task_list))</span><br><span class="line"><span class="built_in">print</span>(done, pending)</span><br></pre></td></tr></table></figure>
+
+<h3 id="asyncio-Future"><a href="#asyncio-Future" class="headerlink" title="asyncio.Future"></a>asyncio.Future</h3><p>Task 继承 Future 对象，Task 对象内部 await 结果的处理基于 Future 对象来的。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="comment"># 获取当前事件循环</span></span><br><span class="line">    loop = asyncio.get_running_loop()</span><br><span class="line">    <span class="comment"># # 创建一个任务（Future对象），这个任务什么都不干。</span></span><br><span class="line">    fut = loop.create_future()</span><br><span class="line">    <span class="comment"># 等待任务最终结果（Future对象），没有结果则会一直等下去。</span></span><br><span class="line">    <span class="keyword">await</span> fut</span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<p>示例2：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">set_after</span>(<span class="params">fut</span>):</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">2</span>)</span><br><span class="line">    fut.set_result(<span class="string">&quot;666&quot;</span>)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="comment"># 获取当前事件循环</span></span><br><span class="line">    loop = asyncio.get_running_loop()</span><br><span class="line">    <span class="comment"># 创建一个任务（Future对象），没绑定任何行为，则这个任务永远不知道什么时候结束。</span></span><br><span class="line">    fut = loop.create_future()</span><br><span class="line">    <span class="comment"># 创建一个任务（Task对象），绑定了set_after函数，函数内部在2s之后，会给fut赋值。</span></span><br><span class="line">    <span class="comment"># 即手动设置future任务的最终结果，那么fut就可以结束了。</span></span><br><span class="line">    <span class="keyword">await</span> loop.create_task(set_after(fut))</span><br><span class="line">    <span class="comment"># 等待 Future对象获取 最终结果，否则一直等下去</span></span><br><span class="line">    data = <span class="keyword">await</span> fut</span><br><span class="line">    <span class="built_in">print</span>(data)</span><br><span class="line">    </span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<p>Future对象本身函数进行绑定，所以想要让事件循环获取Future的结果，则需要手动设置。而Task对象继承了Future对象，其实就对Future进行扩展，他可以实现在对应绑定的函数执行完成之后，自动执行<code>set_result</code>，从而实现自动结束。</p>
+<p>虽然，平时使用的是Task对象，但对于结果的处理本质是基于Future对象来实现的。</p>
+<h3 id="concurrent-futures-Future"><a href="#concurrent-futures-Future" class="headerlink" title="concurrent.futures.Future"></a>concurrent.futures.Future</h3><blockquote>
+<p>和 asyncio.Future 没有任何关系</p>
+<p>使用线程池、进程池实现异步操作时用到的对象</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> concurrent.futures <span class="keyword">import</span> Future</span><br><span class="line"><span class="keyword">from</span> concurrent.futures.thread <span class="keyword">import</span> ThreadPoolExecutor</span><br><span class="line"><span class="keyword">from</span> concurrent.futures.process <span class="keyword">import</span> ProcessPoolExecuto</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">value</span>):</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    <span class="built_in">print</span>(value)</span><br><span class="line">    </span><br><span class="line">pool = ThreadPoolExecutor(max_workers=<span class="number">5</span>)</span><br><span class="line"><span class="comment"># 或 pool = ProcessPoolExecutor(max_workers=5)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    fut = pool.submit(func, i)</span><br><span class="line">    <span class="built_in">print</span>(fut)</span><br></pre></td></tr></table></figure>
+
+<p>两个Future对象是不同的，他们是为不同的应用场景而设计，例如：<code>concurrent.futures.Future</code>不支持await语法 等。</p>
+<p>官方提示两对象之间不同：</p>
+<ul>
+<li>unlike asyncio Futures, <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/concurrent.futures.html#concurrent.futures.Future"><code>concurrent.futures.Future</code></a> instances cannot be awaited.</li>
+<li><a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-future.html#asyncio.Future.result"><code>asyncio.Future.result()</code></a> and <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-future.html#asyncio.Future.exception"><code>asyncio.Future.exception()</code></a> do not accept the <em>timeout</em> argument.</li>
+<li><a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-future.html#asyncio.Future.result"><code>asyncio.Future.result()</code></a> and <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-future.html#asyncio.Future.exception"><code>asyncio.Future.exception()</code></a> raise an <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-exceptions.html#asyncio.InvalidStateError"><code>InvalidStateError</code></a> exception when the Future is not <em>done</em>.</li>
+<li>Callbacks registered with <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-future.html#asyncio.Future.add_done_callback"><code>asyncio.Future.add_done_callback()</code></a> are not called immediately. They are scheduled with <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/asyncio-eventloop.html#asyncio.loop.call_soon"><code>loop.call_soon()</code></a> instead.</li>
+<li>asyncio Future is not compatible with the <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/concurrent.futures.html#concurrent.futures.wait"><code>concurrent.futures.wait()</code></a> and <a target="_blank" rel="noopener" href="https://docs.python.org/3.8/library/concurrent.futures.html#concurrent.futures.as_completed"><code>concurrent.futures.as_completed()</code></a> functions.</li>
+</ul>
+<p>在Python提供了一个将<code>futures.Future</code> 对象包装成<code>asyncio.Future</code>对象的函数 <code>asynic.wrap_future</code>。</p>
+<p>接下里你肯定问：为什么python会提供这种功能？</p>
+<p>其实，一般在程序开发中我们要么统一使用 asycio 的协程实现异步操作、要么都使用进程池和线程池实现异步操作。但如果 <code>协程的异步</code>和 <code>进程池/线程池的异步</code> 混搭时，那么就会用到此功能了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> concurrent.futures</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func1</span>():</span><br><span class="line">    <span class="comment"># 某个耗时操作</span></span><br><span class="line">    time.sleep(<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;SB&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    loop = asyncio.get_running_loop()</span><br><span class="line">    <span class="comment"># 1. Run in the default loop&#x27;s executor ( 默认ThreadPoolExecutor )</span></span><br><span class="line">    <span class="comment"># 第一步：内部会先调用 ThreadPoolExecutor 的 submit 方法去线程池中申请一个线程去执行func1函数，并返回一个concurrent.futures.Future对象</span></span><br><span class="line">    <span class="comment"># 第二步：调用asyncio.wrap_future将concurrent.futures.Future对象包装为asycio.Future对象。</span></span><br><span class="line">    <span class="comment"># 因为concurrent.futures.Future对象不支持await语法，所以需要包装为 asycio.Future对象 才能使用。</span></span><br><span class="line">    fut = loop.run_in_executor(<span class="literal">None</span>, func1)</span><br><span class="line">    result = <span class="keyword">await</span> fut</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;default thread pool&#x27;</span>, result)</span><br><span class="line">    <span class="comment"># 2. Run in a custom thread pool:</span></span><br><span class="line">    <span class="comment"># with concurrent.futures.ThreadPoolExecutor() as pool:</span></span><br><span class="line">    <span class="comment">#     result = await loop.run_in_executor(</span></span><br><span class="line">    <span class="comment">#         pool, func1)</span></span><br><span class="line">    <span class="comment">#     print(&#x27;custom thread pool&#x27;, result)</span></span><br><span class="line">    <span class="comment"># 3. Run in a custom process pool:</span></span><br><span class="line">    <span class="comment"># with concurrent.futures.ProcessPoolExecutor() as pool:</span></span><br><span class="line">    <span class="comment">#     result = await loop.run_in_executor(</span></span><br><span class="line">    <span class="comment">#         pool, func1)</span></span><br><span class="line">    <span class="comment">#     print(&#x27;custom process pool&#x27;, result)</span></span><br><span class="line">asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<p>应用场景：当项目以协程式的异步编程开发时，如果要使用一个第三方模块，而第三方模块不支持协程方式异步编程时，就需要用到这个功能，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">download_image</span>(<span class="params">url</span>):</span><br><span class="line">    <span class="comment"># 发送网络请求，下载图片（遇到网络下载图片的IO请求，自动化切换到其他任务）</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;开始下载:&quot;</span>, url)</span><br><span class="line">    loop = asyncio.get_event_loop()</span><br><span class="line">    <span class="comment"># requests模块默认不支持异步操作，所以就使用线程池来配合实现了。</span></span><br><span class="line">    future = loop.run_in_executor(<span class="literal">None</span>, requests.get, url)</span><br><span class="line">    response = <span class="keyword">await</span> future</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;下载完成&#x27;</span>)</span><br><span class="line">    <span class="comment"># 图片保存到本地文件</span></span><br><span class="line">    file_name = url.rsplit(<span class="string">&#x27;_&#x27;</span>)[-<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(file_name, mode=<span class="string">&#x27;wb&#x27;</span>) <span class="keyword">as</span> file_object:</span><br><span class="line">        file_object.write(response.content)</span><br><span class="line">        </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    url_list = [</span><br><span class="line">        <span class="string">&#x27;https://www3.autoimg.cn/newsdfs/g26/M02/35/A9/120x90_0_autohomecar__ChsEe12AXQ6AOOH_AAFocMs8nzU621.jpg&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;https://www2.autoimg.cn/newsdfs/g30/M01/3C/E2/120x90_0_autohomecar__ChcCSV2BBICAUntfAADjJFd6800429.jpg&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;https://www3.autoimg.cn/newsdfs/g26/M0B/3C/65/120x90_0_autohomecar__ChcCP12BFCmAIO83AAGq7vK0sGY193.jpg&#x27;</span></span><br><span class="line">    ]</span><br><span class="line">    tasks = [download_image(url) <span class="keyword">for</span> url <span class="keyword">in</span> url_list]</span><br><span class="line">    loop = asyncio.get_event_loop()</span><br><span class="line">    loop.run_until_complete( asyncio.wait(tasks) )</span><br></pre></td></tr></table></figure>
+
+<h3 id="异步迭代器"><a href="#异步迭代器" class="headerlink" title="异步迭代器"></a>异步迭代器</h3><h2 id="uvloop"><a href="#uvloop" class="headerlink" title="uvloop"></a>uvloop</h2><p>Python标准库中提供了<code>asyncio</code>模块，用于支持基于协程的异步编程。</p>
+<p>uvloop是 asyncio 中的事件循环的替代方案，替换后可以使得asyncio性能提高。事实上，uvloop要比nodejs、gevent等其他python异步框架至少要快2倍，性能可以比肩Go语言。</p>
+<p>安装uvloop</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install uvloop</span><br></pre></td></tr></table></figure>
+
+<p>在项目中想要使用uvloop替换asyncio的事件循环也非常简单，只要在代码中这么做就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> uvloop</span><br><span class="line"></span><br><span class="line">asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())</span><br><span class="line"><span class="comment"># 编写asyncio的代码，与之前写的代码一致。</span></span><br><span class="line"><span class="comment"># 内部的事件循环自动化会变为uvloop</span></span><br><span class="line"></span><br><span class="line">asyncio.run(...)</span><br></pre></td></tr></table></figure>
+
+<p>注意：知名的asgi uvicorn内部就是使用的uvloop的事件循环。</p>
+<h2 id="实战案例"><a href="#实战案例" class="headerlink" title="实战案例"></a>实战案例</h2><h3 id="异步-Redis"><a href="#异步-Redis" class="headerlink" title="异步 Redis"></a>异步 Redis</h3><p>当通过 Python 去操作 redis 时，连接、设置值、获取值 这些都涉及网络 IO 请求，使用 asyncio 异步的方式可以在 IO 等待时去做一些其他任务，从而提升性能</p>
+<p>安装Python异步操作redis模块</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install aioredis</span><br></pre></td></tr></table></figure>
+
+<p>示例1：异步操作redis。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> aioredis</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">execute</span>(<span class="params">address, password</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;开始执行&quot;</span>, address)</span><br><span class="line">    <span class="comment"># 网络IO操作：创建redis连接</span></span><br><span class="line">    redis = <span class="keyword">await</span> aioredis.create_redis(address, password=password)</span><br><span class="line">    <span class="comment"># 网络IO操作：在redis中设置哈希值car，内部在设三个键值对，即： redis = &#123; car:&#123;key1:1,key2:2,key3:3&#125;&#125;</span></span><br><span class="line">    <span class="keyword">await</span> redis.hmset_dict(<span class="string">&#x27;car&#x27;</span>, key1=<span class="number">1</span>, key2=<span class="number">2</span>, key3=<span class="number">3</span>)</span><br><span class="line">    <span class="comment"># 网络IO操作：去redis中获取值</span></span><br><span class="line">    result = <span class="keyword">await</span> redis.hgetall(<span class="string">&#x27;car&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(result)</span><br><span class="line">    redis.close()</span><br><span class="line">    <span class="comment"># 网络IO操作：关闭redis连接</span></span><br><span class="line">    <span class="keyword">await</span> redis.wait_closed()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;结束&quot;</span>, address)</span><br><span class="line">    </span><br><span class="line">asyncio.run(execute(<span class="string">&#x27;redis://47.93.4.198:6379&#x27;</span>, <span class="string">&quot;root!2345&quot;</span>))</span><br></pre></td></tr></table></figure>
+
+<p>示例2：连接多个redis做操作（遇到IO会切换其他任务，提供了性能）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> aioredis</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">execute</span>(<span class="params">address, password</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;开始执行&quot;</span>, address)</span><br><span class="line">    <span class="comment"># 网络IO操作：先去连接 47.93.4.197:6379，遇到IO则自动切换任务，去连接47.93.4.198:6379</span></span><br><span class="line">    redis = <span class="keyword">await</span> aioredis.create_redis_pool(address, password=password)</span><br><span class="line">    <span class="comment"># 网络IO操作：遇到IO会自动切换任务</span></span><br><span class="line">    <span class="keyword">await</span> redis.hmset_dict(<span class="string">&#x27;car&#x27;</span>, key1=<span class="number">1</span>, key2=<span class="number">2</span>, key3=<span class="number">3</span>)</span><br><span class="line">    <span class="comment"># 网络IO操作：遇到IO会自动切换任务</span></span><br><span class="line">    result = <span class="keyword">await</span> redis.hgetall(<span class="string">&#x27;car&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(result)</span><br><span class="line">    redis.close()</span><br><span class="line">    <span class="comment"># 网络IO操作：遇到IO会自动切换任务</span></span><br><span class="line">    <span class="keyword">await</span> redis.wait_closed()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;结束&quot;</span>, address)</span><br><span class="line">    </span><br><span class="line">task_list = [</span><br><span class="line">    execute(<span class="string">&#x27;redis://47.93.4.197:6379&#x27;</span>, <span class="string">&quot;root!2345&quot;</span>),</span><br><span class="line">    execute(<span class="string">&#x27;redis://47.93.4.198:6379&#x27;</span>, <span class="string">&quot;root!2345&quot;</span>)</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">asyncio.run(asyncio.wait(task_list))</span><br></pre></td></tr></table></figure>
+
+<p>官网：<a target="_blank" rel="noopener" href="https://aioredis.readthedocs.io/en/v1.3.0/start.html">https://aioredis.readthedocs.io/en/v1.3.0/start.html</a></p>
+<h3 id="爬虫"><a href="#爬虫" class="headerlink" title="爬虫"></a>爬虫</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> aiohttp</span><br><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">fetch</span>(<span class="params">session, url</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;发送请求：&quot;</span>, url)</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> session.get(url, verify_ssl=<span class="literal">False</span>) <span class="keyword">as</span> response:</span><br><span class="line">        text = <span class="keyword">await</span> response.text()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;得到结果：&quot;</span>, url, <span class="built_in">len</span>(text))</span><br><span class="line">        </span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> aiohttp.ClientSession() <span class="keyword">as</span> session:</span><br><span class="line">        url_list = [</span><br><span class="line">            <span class="string">&#x27;https://python.org&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;https://www.baidu.com&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;https://www.pythonav.com&#x27;</span></span><br><span class="line">        ]</span><br><span class="line">        tasks = [asyncio.create_task(fetch(session, url)) <span class="keyword">for</span> url <span class="keyword">in</span> url_list]</span><br><span class="line">        <span class="keyword">await</span> asyncio.wait(tasks)</span><br><span class="line">        </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    asyncio.run(main())</span><br></pre></td></tr></table></figure>
+
+<h2 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h2><h3 id="requests"><a href="#requests" class="headerlink" title="requests"></a>requests</h3><blockquote>
+<p>requests.post 每次都会创建新的连接，速度较慢。如果首先初始化一个 session，那么 requests 会保持连接，大大提高请求速度</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">session = requests.Session()</span><br><span class="line"><span class="comment"># session 只对同一个链接请求多次的场景下有效</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>不借助其他第三方库的情况下</strong></p>
+<ul>
+<li>requests：只能发送同步请求</li>
+<li>aiohttp: 只能发送异步请求</li>
+<li>httpx: 既能发送同步请求，又能发送异步请求</li>
+</ul>
+<p><strong>总结</strong></p>
+<ul>
+<li>如果你只发几条请求。那么使用 requests 或者 httpx 的同步模式，代码最简单。</li>
+<li>requests 是否创建一个 session 保持连接，速度差别比较大，在没有反爬的情况下，只追求速度，建议用 requests.session ()</li>
+<li>如果你要发送很多请求，但是有些地方要发送同步请求，有些地方要发送异步请求，那么使用 httpx 最省事。</li>
+<li>如果你要发送很多请求，并且越快越好，那么使用 aiohttp 最快。</li>
+</ul>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h3 id="路径"><a href="#路径" class="headerlink" title="路径"></a>路径</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">os.path.join(cur_path, &quot;\asdff.csv&quot;)</span><br><span class="line">字符串 &quot;\asdff.csv&quot; 会导致从系统根目录开始加载</span><br><span class="line"></span><br><span class="line">当 flask 运行时，os.getcwd() 获取的时项目根目录</span><br></pre></td></tr></table></figure>
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/05/22/Python%E6%97%A5%E5%BF%97json%E6%A0%BC%E5%BC%8F/">Python日志json格式</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/05/19/Python-%E8%A3%85%E9%A5%B0%E5%99%A8/">Python 装饰器</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">xinmos</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E7%A8%8B"><span class="toc-text">协程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#yield-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-text">yield 关键字</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#asyncio"><span class="toc-text">asyncio</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B"><span class="toc-text">异步编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-text">事件循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0"><span class="toc-text">协程函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#await"><span class="toc-text">await</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Task-%E5%AF%B9%E8%B1%A1"><span class="toc-text">Task 对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#asyncio-Future"><span class="toc-text">asyncio.Future</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#concurrent-futures-Future"><span class="toc-text">concurrent.futures.Future</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="toc-text">异步迭代器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#uvloop"><span class="toc-text">uvloop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B"><span class="toc-text">实战案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5-Redis"><span class="toc-text">异步 Redis</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%88%AC%E8%99%AB"><span class="toc-text">爬虫</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94"><span class="toc-text">对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#requests"><span class="toc-text">requests</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-text">问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84"><span class="toc-text">路径</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"codeblock":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
